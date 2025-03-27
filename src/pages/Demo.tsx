@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +6,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Download, Share2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import MpesaLogo from "@/components/MpesaLogo";
+import MainNav from "@/components/MainNav";
+import Footer from "@/components/Footer";
 
 const SAMPLE_MESSAGES = [
   "IHF5TH877Z Confirmed. Ksh2,500.00 received from EMILY WANJIKU 254722000000 on 12/5/23 at 10:25 AM. New M-PESA balance is Ksh7,452.00. Transaction cost, Ksh0.00.",
@@ -35,7 +36,6 @@ const Demo = () => {
     const lines = text.split("\n").filter(line => line.trim().length > 0);
     
     lines.forEach(line => {
-      // This regex pattern attempts to match M-PESA transaction confirmation messages
       const pattern = /(\w+)\s+Confirmed\.\s+Ksh([\d,]+\.\d+)\s+received\s+from\s+([A-Z\s]+)\s+(\d+)\s+on\s+(\d+\/\d+\/\d+)\s+at\s+(\d+:\d+\s+[APM]+)/i;
       const match = line.match(pattern);
       
@@ -56,7 +56,6 @@ const Demo = () => {
 
   const handleProcess = () => {
     setIsProcessing(true);
-    // Simulate processing delay
     setTimeout(() => {
       const transactions = parseTransactions(messages);
       setParsedTransactions(transactions);
@@ -72,30 +71,21 @@ const Demo = () => {
   const totalContributed = parsedTransactions.reduce((sum, t) => sum + t.amount, 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-white pb-12">
-      {/* Header */}
-      <header className="container mx-auto p-4">
-        <div className="flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <MpesaLogo className="h-8 w-8" />
-            <h1 className="text-2xl font-bold">
-              Pesa<span className="text-green-600">Lytics</span>
-            </h1>
-          </Link>
-          <Button asChild variant="ghost">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-green-50 to-white pb-12">
+      <MainNav />
+
+      <main className="container mx-auto p-4">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold">Try PesaLytics Demo</h1>
+          <Button asChild variant="outline">
             <Link to="/">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Home
             </Link>
           </Button>
         </div>
-      </header>
-
-      <main className="container mx-auto p-4">
-        <h1 className="mb-6 text-center text-3xl font-bold">Try PesaLytics Demo</h1>
         
         <div className="grid gap-8 md:grid-cols-2">
-          {/* Input Section */}
           <Card>
             <CardHeader>
               <CardTitle>1. Paste M-PESA Messages</CardTitle>
@@ -122,7 +112,6 @@ const Demo = () => {
             </CardContent>
           </Card>
           
-          {/* Report Preview */}
           <Card>
             <CardHeader>
               <CardTitle>2. Generated Report Preview</CardTitle>
@@ -185,6 +174,8 @@ const Demo = () => {
           </Card>
         </div>
       </main>
+      
+      <Footer />
     </div>
   );
 };
