@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,8 @@ import { Loader2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import BackNavigationButton from "@/components/BackNavigationButton";
+import NextNavigationButton from "@/components/NextNavigationButton";
 
 const RegistrationWithPayment = () => {
   const [email, setEmail] = useState("");
@@ -27,6 +30,22 @@ const RegistrationWithPayment = () => {
     free: { name: "Free Plan", price: 0 },
     premium: { name: "Premium Plan", price: 499 },
     business: { name: "Business Plan", price: 999 }
+  };
+
+  const formatPhoneNumber = (input: string): string => {
+    let phone = input.replace(/\D/g, '');
+    
+    // If starts with 0, replace with 254
+    if (phone.startsWith('0')) {
+      phone = '254' + phone.substring(1);
+    }
+    
+    // If doesn't start with 254, add it
+    if (!phone.startsWith('254') && phone.length > 0) {
+      phone = '254' + phone;
+    }
+    
+    return phone;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,7 +82,9 @@ const RegistrationWithPayment = () => {
   };
 
   const handlePayment = async () => {
-    if (!phoneNumber || phoneNumber.length < 10) {
+    const formattedPhone = formatPhoneNumber(phoneNumber);
+    
+    if (!formattedPhone || formattedPhone.length < 12) {
       toast.error("Please enter a valid M-Pesa number");
       return;
     }
@@ -73,7 +94,7 @@ const RegistrationWithPayment = () => {
     try {
       const { data, error } = await supabase.functions.invoke("process-payment", {
         body: {
-          phoneNumber,
+          phoneNumber: formattedPhone,
           amount: plans[selectedPlan as keyof typeof plans].price,
           planId: selectedPlan,
           email
@@ -280,28 +301,41 @@ const RegistrationWithPayment = () => {
                 </p>
               </div>
               
-              <Button 
-                onClick={handlePayment} 
-                className="w-full bg-green-600 hover:bg-green-700"
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  "Pay with M-Pesa"
-                )}
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                className="w-full"
-                onClick={() => navigate("/dashboard")}
-              >
-                Skip for now (Free Trial)
-              </Button>
+              <div className="flex flex-col gap-4">
+                <Button 
+                  onClick={handlePayment} 
+                  className="w-full bg-green-600 hover:bg-green-700"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    "Pay with M-Pesa"
+                  )}
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => navigate("/dashboard")}
+                >
+                  Skip for now (Free Trial)
+                </Button>
+                
+                <BackNavigationButton
+                  to="#"
+                  label="Back to Registration"
+                  variant="ghost"
+                  className="mt-2"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setPaymentStep(false);
+                  }}
+                />
+              </div>
             </div>
           ) : (
             <div className="text-center py-4">

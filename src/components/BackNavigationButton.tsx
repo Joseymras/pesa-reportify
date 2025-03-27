@@ -9,6 +9,7 @@ interface BackNavigationButtonProps {
   variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
   size?: "default" | "sm" | "lg" | "icon";
   className?: string;
+  onClick?: (e: React.MouseEvent) => void;
 }
 
 const BackNavigationButton = ({ 
@@ -16,11 +17,16 @@ const BackNavigationButton = ({
   label = "Back", 
   variant = "outline",
   size = "sm",
-  className = ""
+  className = "",
+  onClick
 }: BackNavigationButtonProps) => {
   return (
     <Button asChild variant={variant} size={size} className={className}>
-      <Link to={to} className="flex items-center gap-2">
+      <Link 
+        to={to} 
+        className="flex items-center gap-2"
+        onClick={onClick}
+      >
         <ArrowLeft className="h-4 w-4" />
         {label}
       </Link>

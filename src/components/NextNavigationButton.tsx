@@ -9,6 +9,7 @@ interface NextNavigationButtonProps {
   variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
   size?: "default" | "sm" | "lg" | "icon";
   className?: string;
+  onClick?: (e: React.MouseEvent) => void;
 }
 
 const NextNavigationButton = ({ 
@@ -16,11 +17,21 @@ const NextNavigationButton = ({
   label = "Next", 
   variant = "default",
   size = "sm",
-  className = ""
+  className = "",
+  onClick
 }: NextNavigationButtonProps) => {
   return (
-    <Button asChild variant={variant} size={size} className={`${className} ${variant === "default" ? "bg-green-600 hover:bg-green-700" : ""}`}>
-      <Link to={to} className="flex items-center gap-2">
+    <Button 
+      asChild 
+      variant={variant} 
+      size={size} 
+      className={`${className} ${variant === "default" ? "bg-green-600 hover:bg-green-700" : ""}`}
+    >
+      <Link 
+        to={to} 
+        className="flex items-center gap-2"
+        onClick={onClick}
+      >
         {label}
         <ArrowRight className="h-4 w-4" />
       </Link>

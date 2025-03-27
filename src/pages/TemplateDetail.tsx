@@ -315,7 +315,7 @@ const TemplateDetail = () => {
         <div className="mt-12 flex justify-between">
           <BackNavigationButton to="/templates" label="Back to Templates" />
           <NextNavigationButton 
-            to="#" 
+            to="/dashboard" 
             label="Use Template" 
             onClick={(e) => {
               e.preventDefault();

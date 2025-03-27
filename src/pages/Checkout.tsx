@@ -3,11 +3,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import MainNav from "@/components/MainNav";
 import Footer from "@/components/Footer";
-import BackButton from "@/components/BackButton";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
+import BackNavigationButton from "@/components/BackNavigationButton";
+import NextNavigationButton from "@/components/NextNavigationButton";
 
 const Checkout = () => {
   const { planId } = useParams<{ planId: string }>();
@@ -34,6 +35,22 @@ const Checkout = () => {
   };
   
   const planDetails = getPlanDetails();
+
+  const formatPhoneNumber = (input: string): string => {
+    let phone = input.replace(/\D/g, '');
+    
+    // If starts with 0, replace with 254
+    if (phone.startsWith('0')) {
+      phone = '254' + phone.substring(1);
+    }
+    
+    // If doesn't start with 254, add it
+    if (!phone.startsWith('254') && phone.length > 0) {
+      phone = '254' + phone;
+    }
+    
+    return phone;
+  };
   
   // Effect for checking payment status
   useEffect(() => {
@@ -63,7 +80,9 @@ const Checkout = () => {
   }, [checkoutRequestId, paymentStatus]);
   
   const handlePayment = async () => {
-    if (!phoneNumber || phoneNumber.length < 10) {
+    const formattedPhone = formatPhoneNumber(phoneNumber);
+    
+    if (!formattedPhone || formattedPhone.length < 12) {
       toast.error("Please enter a valid M-Pesa number");
       return;
     }
@@ -73,7 +92,7 @@ const Checkout = () => {
     try {
       const { data, error } = await supabase.functions.invoke("process-payment", {
         body: {
-          phoneNumber,
+          phoneNumber: formattedPhone,
           amount: planDetails.price,
           planId,
           email
@@ -138,7 +157,7 @@ const Checkout = () => {
       <main className="container mx-auto px-4 py-8 flex-grow">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-3xl font-bold">Checkout</h1>
-          <BackButton to="/pricing" label="Back to Pricing" />
+          <BackNavigationButton to="/pricing" label="Back to Pricing" />
         </div>
         
         <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-sm">
@@ -234,6 +253,22 @@ const Checkout = () => {
                 <span>Priority customer support</span>
               </li>
             </ul>
+          </div>
+          
+          <div className="mt-6 flex justify-between">
+            <BackNavigationButton 
+              to="/pricing" 
+              label="Back to Pricing" 
+              variant="ghost"
+            />
+            
+            {!checkoutRequestId && (
+              <NextNavigationButton 
+                to="/dashboard" 
+                label="Continue as Free User" 
+                variant="outline"
+              />
+            )}
           </div>
         </div>
       </main>

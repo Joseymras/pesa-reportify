@@ -38,6 +38,7 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("new");
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   // Check if logged in
   useEffect(() => {
@@ -137,6 +138,7 @@ const Dashboard = () => {
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
+    setIsSheetOpen(false); // Close sheet when changing tabs
   };
 
   const totalContributed = calculateTotal(parsedTransactions.map(t => t.amount));
@@ -189,7 +191,7 @@ const Dashboard = () => {
 
         <main className="flex-1">
           <header className="flex h-16 items-center justify-between border-b bg-white px-4 md:px-6">
-            <Sheet>
+            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="md:hidden">
                   <List className="h-6 w-6" />
@@ -203,15 +205,36 @@ const Dashboard = () => {
                   </h1>
                 </div>
                 <nav className="flex flex-col gap-2 p-4">
-                  <Button variant="ghost" className="justify-start gap-2" onClick={() => { setActiveTab("new"); document.querySelector('.ReactModalPortal button')?.click(); }}>
+                  <Button 
+                    variant="ghost" 
+                    className="justify-start gap-2" 
+                    onClick={() => { 
+                      setActiveTab("new"); 
+                      setIsSheetOpen(false);
+                    }}
+                  >
                     <FileText className="h-5 w-5" />
                     New Report
                   </Button>
-                  <Button variant="ghost" className="justify-start gap-2" onClick={() => { setActiveTab("saved"); document.querySelector('.ReactModalPortal button')?.click(); }}>
+                  <Button 
+                    variant="ghost" 
+                    className="justify-start gap-2" 
+                    onClick={() => { 
+                      setActiveTab("saved"); 
+                      setIsSheetOpen(false);
+                    }}
+                  >
                     <FileText className="h-5 w-5" />
                     Saved Reports
                   </Button>
-                  <Button variant="ghost" className="justify-start gap-2" onClick={() => { setActiveTab("whatsapp"); document.querySelector('.ReactModalPortal button')?.click(); }}>
+                  <Button 
+                    variant="ghost" 
+                    className="justify-start gap-2" 
+                    onClick={() => { 
+                      setActiveTab("whatsapp"); 
+                      setIsSheetOpen(false);
+                    }}
+                  >
                     <FileText className="h-5 w-5" />
                     WhatsApp Integration
                   </Button>
