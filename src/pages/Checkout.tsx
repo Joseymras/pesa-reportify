@@ -11,8 +11,14 @@ const Checkout = () => {
   const { planId } = useParams<{ planId: string }>();
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState("");
 
   const handlePayment = () => {
+    if (!phoneNumber || phoneNumber.length < 10) {
+      toast.error("Please enter a valid M-Pesa number");
+      return;
+    }
+    
     setIsProcessing(true);
     
     // Simulate payment processing
@@ -48,6 +54,8 @@ const Checkout = () => {
                 type="tel" 
                 className="w-full p-2 border rounded-md" 
                 placeholder="254700000000"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
               />
             </div>
             <Button 
@@ -60,6 +68,28 @@ const Checkout = () => {
             <p className="text-sm text-muted-foreground mt-2 text-center">
               You will receive an M-Pesa prompt on your phone.
             </p>
+          </div>
+          
+          <div className="border-t pt-4 mt-6">
+            <h3 className="font-medium mb-3">What you'll get:</h3>
+            <ul className="space-y-2 text-sm">
+              <li className="flex items-start gap-2">
+                <span className="text-green-600">✓</span>
+                <span>Access to all premium templates</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-green-600">✓</span>
+                <span>Link up to 5 WhatsApp groups</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-green-600">✓</span>
+                <span>Unlimited report generation</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-green-600">✓</span>
+                <span>Priority customer support</span>
+              </li>
+            </ul>
           </div>
         </div>
       </main>
