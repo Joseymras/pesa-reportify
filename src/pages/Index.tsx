@@ -4,10 +4,15 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { ArrowRight, BarChart4, FileText, MessageSquare, Share2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import MpesaLogo from "@/components/MpesaLogo";
+import MainNav from "@/components/MainNav";
+import Footer from "@/components/Footer";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-green-50 to-white">
+      {/* Navigation */}
+      <MainNav />
+      
       {/* Hero Section */}
       <header className="container mx-auto px-4 py-12 md:py-24">
         <div className="flex flex-col items-center text-center">
@@ -108,23 +113,7 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-slate-900 py-12 text-slate-200">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
-            <div className="flex items-center gap-2">
-              <MpesaLogo className="h-8 w-8" />
-              <span className="text-xl font-bold">PesaLytics</span>
-            </div>
-            <div className="flex gap-8">
-              <Link to="/about" className="hover:text-white">About</Link>
-              <Link to="/features" className="hover:text-white">Features</Link>
-              <Link to="/pricing" className="hover:text-white">Pricing</Link>
-              <Link to="/contact" className="hover:text-white">Contact</Link>
-            </div>
-            <p className="text-sm text-slate-400">© 2023 PesaLytics. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

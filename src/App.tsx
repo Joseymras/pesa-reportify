@@ -10,6 +10,7 @@ import Signup from "./pages/Signup";
 import Demo from "./pages/Demo";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
+import TawkChat from "./components/TawkChat";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,10 @@ const App = () => (
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
+      <TawkChat 
+        propertyId="64f5d9a0a0c3e16c4b5c7c90" 
+        widgetId="1h1etbqvd" 
+      />
     </TooltipProvider>
   </QueryClientProvider>
 );
