@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Smartphone, Plus, Trash2 } from "lucide-react";
+import { Smartphone, Plus, Trash2, QrCode } from "lucide-react";
 import { toast } from "sonner";
 
 interface WhatsAppGroup {
@@ -12,12 +12,17 @@ interface WhatsAppGroup {
   active: boolean;
 }
 
-const WhatsAppLinking = () => {
+interface WhatsAppLinkingProps {
+  onIntegrationChange?: (integrated: boolean) => void;
+}
+
+const WhatsAppLinking = ({ onIntegrationChange }: WhatsAppLinkingProps) => {
   const [groups, setGroups] = useState<WhatsAppGroup[]>([
     { id: '1', name: 'Family Contributions', active: true },
     { id: '2', name: 'Office Chama', active: false }
   ]);
   const [newGroupName, setNewGroupName] = useState('');
+  const [showQRCode, setShowQRCode] = useState(false);
   
   const addGroup = () => {
     if (!newGroupName.trim()) {
@@ -31,20 +36,42 @@ const WhatsAppLinking = () => {
       active: false
     };
     
-    setGroups([...groups, newGroup]);
+    const updatedGroups = [...groups, newGroup];
+    setGroups(updatedGroups);
     setNewGroupName('');
     toast.success("WhatsApp group added");
+    
+    // Notify parent component about integration status
+    if (onIntegrationChange) {
+      onIntegrationChange(updatedGroups.some(g => g.active));
+    }
   };
   
   const removeGroup = (id: string) => {
-    setGroups(groups.filter(group => group.id !== id));
+    const updatedGroups = groups.filter(group => group.id !== id);
+    setGroups(updatedGroups);
     toast.success("WhatsApp group removed");
+    
+    // Notify parent component about integration status
+    if (onIntegrationChange) {
+      onIntegrationChange(updatedGroups.some(g => g.active));
+    }
   };
   
   const toggleGroupActive = (id: string) => {
-    setGroups(groups.map(group => 
+    const updatedGroups = groups.map(group => 
       group.id === id ? { ...group, active: !group.active } : group
-    ));
+    );
+    setGroups(updatedGroups);
+    
+    // Notify parent component about integration status
+    if (onIntegrationChange) {
+      onIntegrationChange(updatedGroups.some(g => g.active));
+    }
+  };
+
+  const handleConnectViaQR = () => {
+    setShowQRCode(!showQRCode);
   };
 
   return (
@@ -87,16 +114,37 @@ const WhatsAppLinking = () => {
             </div>
           ))}
           
-          <div className="flex gap-2 mt-4">
-            <Input 
-              placeholder="Add a new WhatsApp group" 
-              value={newGroupName}
-              onChange={(e) => setNewGroupName(e.target.value)}
-            />
-            <Button onClick={addGroup}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add
+          {showQRCode && (
+            <div className="mt-4 p-4 border rounded-md text-center">
+              <div className="bg-slate-100 p-6 rounded-md inline-block mx-auto mb-3">
+                <QrCode className="h-32 w-32 mx-auto text-slate-600" />
+              </div>
+              <p className="text-sm text-muted-foreground mb-3">
+                Open WhatsApp on your phone, go to Settings &gt; Linked Devices, and scan this QR code
+              </p>
+              <Button variant="outline" size="sm" onClick={handleConnectViaQR}>
+                Hide QR Code
+              </Button>
+            </div>
+          )}
+          
+          <div className="flex flex-col gap-3 mt-4">
+            <Button variant="outline" size="sm" onClick={handleConnectViaQR} className="gap-2">
+              <QrCode className="h-4 w-4" />
+              {showQRCode ? "Hide QR Code" : "Connect via QR Code"}
             </Button>
+            
+            <div className="flex gap-2">
+              <Input 
+                placeholder="Add a new WhatsApp group" 
+                value={newGroupName}
+                onChange={(e) => setNewGroupName(e.target.value)}
+              />
+              <Button onClick={addGroup}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add
+              </Button>
+            </div>
           </div>
         </div>
       </CardContent>
