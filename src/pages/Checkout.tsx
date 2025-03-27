@@ -9,6 +9,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import BackNavigationButton from "@/components/BackNavigationButton";
 import NextNavigationButton from "@/components/NextNavigationButton";
+import GoogleAd from "@/components/GoogleAd";
+import { useAuth } from "@/context/AuthContext";
+import { calculateFinancial, formatCurrency } from "@/utils/calculationUtils";
 
 const Checkout = () => {
   const { planId } = useParams<{ planId: string }>();
@@ -19,6 +22,7 @@ const Checkout = () => {
   const [email, setEmail] = useState("");
   const [checkoutRequestId, setCheckoutRequestId] = useState<string | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
+  const { user } = useAuth();
   
   // Get plan details based on planId
   const getPlanDetails = () => {
@@ -35,6 +39,13 @@ const Checkout = () => {
   };
   
   const planDetails = getPlanDetails();
+
+  // Set email from user if available
+  useEffect(() => {
+    if (user?.email) {
+      setEmail(user.email);
+    }
+  }, [user]);
 
   const formatPhoneNumber = (input: string): string => {
     let phone = input.replace(/\D/g, '');
@@ -77,7 +88,7 @@ const Checkout = () => {
     return () => {
       if (intervalId) clearInterval(intervalId);
     };
-  }, [checkoutRequestId, paymentStatus]);
+  }, [checkoutRequestId, paymentStatus, navigate]);
   
   const handlePayment = async () => {
     const formattedPhone = formatPhoneNumber(phoneNumber);
@@ -150,6 +161,10 @@ const Checkout = () => {
     }
   };
 
+  // Calculate tax and total
+  const vat = calculateFinancial('multiply', planDetails.price, 0.16);
+  const total = calculateFinancial('add', planDetails.price, vat);
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-green-50 to-white">
       <MainNav />
@@ -160,115 +175,141 @@ const Checkout = () => {
           <BackNavigationButton to="/pricing" label="Back to Pricing" />
         </div>
         
-        <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-sm">
-          <h2 className="text-xl font-semibold mb-4">Complete Your Purchase</h2>
-          <p className="mb-4">Selected plan: <span className="font-medium">{planDetails.name}</span></p>
-          <p className="mb-6">Price: <span className="font-medium">Ksh {planDetails.price.toLocaleString()}</span></p>
-          
-          <div className="p-6 bg-gray-50 rounded-md mb-6">
-            {!checkoutRequestId ? (
-              <>
-                <div className="mb-4">
-                  <p className="font-semibold mb-2">Enter your M-Pesa number</p>
-                  <input 
-                    type="tel" 
-                    className="w-full p-2 border rounded-md" 
-                    placeholder="254700000000"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Format: 254XXXXXXXXX or 07XXXXXXXX
-                  </p>
-                </div>
-                
-                <div className="mb-6">
-                  <p className="font-semibold mb-2">Email (optional)</p>
-                  <input 
-                    type="email" 
-                    className="w-full p-2 border rounded-md" 
-                    placeholder="your@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </div>
-                
-                <Button 
-                  onClick={handlePayment} 
-                  disabled={isProcessing}
-                  className="w-full bg-green-600 hover:bg-green-700"
-                >
-                  {isProcessing ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    "Pay with M-Pesa"
-                  )}
-                </Button>
-              </>
-            ) : (
-              <div className="text-center py-4">
-                <h3 className="font-medium mb-2">M-Pesa payment initiated</h3>
-                {paymentStatus === "COMPLETED" ? (
-                  <div className="bg-green-100 text-green-800 p-3 rounded-md">
-                    Payment successful! Redirecting to dashboard...
-                  </div>
-                ) : (
+        <div className="grid md:grid-cols-3 gap-8">
+          <div className="md:col-span-2">
+            <div className="bg-white p-8 rounded-lg shadow-sm">
+              <h2 className="text-xl font-semibold mb-4">Complete Your Purchase</h2>
+              <p className="mb-4">Selected plan: <span className="font-medium">{planDetails.name}</span></p>
+              
+              <div className="p-6 bg-gray-50 rounded-md mb-6">
+                {!checkoutRequestId ? (
                   <>
-                    <p className="mb-4">
-                      Please check your phone and enter your PIN to complete the transaction.
-                    </p>
-                    <div className="flex items-center justify-center">
-                      <Loader2 className="h-6 w-6 animate-spin text-green-600 mr-2" />
-                      <span>Waiting for your payment...</span>
+                    <div className="mb-4">
+                      <p className="font-semibold mb-2">Enter your M-Pesa number</p>
+                      <input 
+                        type="tel" 
+                        className="w-full p-2 border rounded-md" 
+                        placeholder="254700000000"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Format: 254XXXXXXXXX or 07XXXXXXXX
+                      </p>
                     </div>
+                    
+                    <div className="mb-6">
+                      <p className="font-semibold mb-2">Email (optional)</p>
+                      <input 
+                        type="email" 
+                        className="w-full p-2 border rounded-md" 
+                        placeholder="your@email.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
+                    </div>
+                    
+                    <Button 
+                      onClick={handlePayment} 
+                      disabled={isProcessing}
+                      className="w-full bg-green-600 hover:bg-green-700"
+                    >
+                      {isProcessing ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        "Pay with M-Pesa"
+                      )}
+                    </Button>
                   </>
+                ) : (
+                  <div className="text-center py-4">
+                    <h3 className="font-medium mb-2">M-Pesa payment initiated</h3>
+                    {paymentStatus === "COMPLETED" ? (
+                      <div className="bg-green-100 text-green-800 p-3 rounded-md">
+                        Payment successful! Redirecting to dashboard...
+                      </div>
+                    ) : (
+                      <>
+                        <p className="mb-4">
+                          Please check your phone and enter your PIN to complete the transaction.
+                        </p>
+                        <div className="flex items-center justify-center">
+                          <Loader2 className="h-6 w-6 animate-spin text-green-600 mr-2" />
+                          <span>Waiting for your payment...</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+                <p className="text-sm text-muted-foreground mt-4 text-center">
+                  Secured by PesaLytics payment services
+                </p>
+              </div>
+              
+              <div className="mt-6 flex justify-between">
+                <BackNavigationButton 
+                  to="/pricing" 
+                  label="Back to Pricing" 
+                  variant="ghost"
+                />
+                
+                {!checkoutRequestId && planDetails.price === 0 && (
+                  <NextNavigationButton 
+                    to="/dashboard" 
+                    label="Continue as Free User" 
+                    variant="outline"
+                  />
                 )}
               </div>
-            )}
-            <p className="text-sm text-muted-foreground mt-4 text-center">
-              Secured by Chpter payment services
-            </p>
-          </div>
-          
-          <div className="border-t pt-4 mt-6">
-            <h3 className="font-medium mb-3">What you'll get:</h3>
-            <ul className="space-y-2 text-sm">
-              <li className="flex items-start gap-2">
-                <span className="text-green-600">✓</span>
-                <span>Access to all premium templates</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-green-600">✓</span>
-                <span>Link up to 5 WhatsApp groups</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-green-600">✓</span>
-                <span>Unlimited report generation</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-green-600">✓</span>
-                <span>Priority customer support</span>
-              </li>
-            </ul>
-          </div>
-          
-          <div className="mt-6 flex justify-between">
-            <BackNavigationButton 
-              to="/pricing" 
-              label="Back to Pricing" 
-              variant="ghost"
-            />
+            </div>
             
-            {!checkoutRequestId && (
-              <NextNavigationButton 
-                to="/dashboard" 
-                label="Continue as Free User" 
-                variant="outline"
-              />
-            )}
+            <GoogleAd className="mt-6" />
+          </div>
+          
+          <div className="md:col-span-1">
+            <div className="bg-white p-6 rounded-lg shadow-sm sticky top-4">
+              <h3 className="font-semibold mb-4 pb-2 border-b">Order Summary</h3>
+              
+              <div className="space-y-3 mb-4">
+                <div className="flex justify-between">
+                  <span>{planDetails.name}</span>
+                  <span>Ksh {formatCurrency(planDetails.price)}</span>
+                </div>
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>VAT (16%)</span>
+                  <span>Ksh {formatCurrency(vat)}</span>
+                </div>
+                <div className="flex justify-between font-bold pt-2 border-t">
+                  <span>Total</span>
+                  <span>Ksh {formatCurrency(total)}</span>
+                </div>
+              </div>
+              
+              <div className="border-t pt-4 mt-4">
+                <h4 className="font-medium mb-3">What you'll get:</h4>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-600">✓</span>
+                    <span>Access to all premium templates</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-600">✓</span>
+                    <span>Link up to 5 WhatsApp groups</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-600">✓</span>
+                    <span>Unlimited report generation</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-600">✓</span>
+                    <span>Priority customer support</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       </main>

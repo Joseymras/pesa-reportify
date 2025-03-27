@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +12,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import BackNavigationButton from "@/components/BackNavigationButton";
 import NextNavigationButton from "@/components/NextNavigationButton";
+import GoogleAd from "@/components/GoogleAd";
+import { calculateFinancial, formatCurrency } from "@/utils/calculationUtils";
 
 const RegistrationWithPayment = () => {
   const [email, setEmail] = useState("");
@@ -23,14 +25,34 @@ const RegistrationWithPayment = () => {
   const [paymentStep, setPaymentStep] = useState(false);
   const [checkoutRequestId, setCheckoutRequestId] = useState<string | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
+  const [formValid, setFormValid] = useState(false);
   const navigate = useNavigate();
-  const { signUp } = useAuth();
+  const { signUp, user } = useAuth();
 
   const plans = {
     free: { name: "Free Plan", price: 0 },
     premium: { name: "Premium Plan", price: 499 },
     business: { name: "Business Plan", price: 999 }
   };
+
+  // Check if user is already logged in
+  useEffect(() => {
+    if (user) {
+      navigate("/dashboard");
+    }
+  }, [user, navigate]);
+
+  // Validate form
+  useEffect(() => {
+    const isValid = 
+      email.trim() !== "" && 
+      password.trim() !== "" && 
+      password === confirmPassword &&
+      password.length >= 6 &&
+      (selectedPlan === "free" || phoneNumber.trim() !== "");
+    
+    setFormValid(isValid);
+  }, [email, password, confirmPassword, phoneNumber, selectedPlan]);
 
   const formatPhoneNumber = (input: string): string => {
     let phone = input.replace(/\D/g, '');
@@ -171,195 +193,237 @@ const RegistrationWithPayment = () => {
     }, 120000);
   };
 
+  // Calculate tax and total for the selected plan
+  const price = plans[selectedPlan as keyof typeof plans].price;
+  const vat = calculateFinancial('multiply', price, 0.16);
+  const total = calculateFinancial('add', price, vat);
+
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-center">
-          {paymentStep ? "Complete Payment" : "Create an Account"}
-        </CardTitle>
-        <CardDescription className="text-center">
-          {paymentStep 
-            ? `Subscribe to our ${plans[selectedPlan as keyof typeof plans].name}`
-            : "Enter your details to create your PesaLytics account"
-          }
-        </CardDescription>
-      </CardHeader>
-      
-      {!paymentStep ? (
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                placeholder="your@email.com" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input 
-                id="password" 
-                type="password" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="confirm-password">Confirm Password</Label>
-              <Input 
-                id="confirm-password" 
-                type="password" 
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                minLength={6}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="plan">Select Plan</Label>
-              <Select 
-                value={selectedPlan} 
-                onValueChange={setSelectedPlan}
-              >
-                <SelectTrigger id="plan">
-                  <SelectValue placeholder="Select a plan" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="free">Free Plan - Ksh 0</SelectItem>
-                  <SelectItem value="premium">Premium Plan - Ksh 499</SelectItem>
-                  <SelectItem value="business">Business Plan - Ksh 999</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {selectedPlan !== "free" && (
+    <>
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold text-center">
+            {paymentStep ? "Complete Payment" : "Create an Account"}
+          </CardTitle>
+          <CardDescription className="text-center">
+            {paymentStep 
+              ? `Subscribe to our ${plans[selectedPlan as keyof typeof plans].name}`
+              : "Enter your details to create your PesaLytics account"
+            }
+          </CardDescription>
+        </CardHeader>
+        
+        {!paymentStep ? (
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="phone">M-Pesa Phone Number</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input 
-                  id="phone" 
-                  type="tel" 
-                  placeholder="254700000000" 
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  id="email" 
+                  type="email" 
+                  placeholder="your@email.com" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input 
+                  id="password" 
+                  type="password" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Format: 254XXXXXXXXX or 07XXXXXXXX
+                  Password must be at least 6 characters
                 </p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password">Confirm Password</Label>
+                <Input 
+                  id="confirm-password" 
+                  type="password" 
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  minLength={6}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="plan">Select Plan</Label>
+                <Select 
+                  value={selectedPlan} 
+                  onValueChange={setSelectedPlan}
+                >
+                  <SelectTrigger id="plan">
+                    <SelectValue placeholder="Select a plan" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="free">Free Plan - Ksh 0</SelectItem>
+                    <SelectItem value="premium">Premium Plan - Ksh 499</SelectItem>
+                    <SelectItem value="business">Business Plan - Ksh 999</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {selectedPlan !== "free" && (
+                <div className="space-y-2">
+                  <Label htmlFor="phone">M-Pesa Phone Number</Label>
+                  <Input 
+                    id="phone" 
+                    type="tel" 
+                    placeholder="254700000000" 
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Format: 254XXXXXXXXX or 07XXXXXXXX
+                  </p>
+                </div>
+              )}
+              
+              {selectedPlan !== "free" && (
+                <div className="p-4 bg-gray-50 rounded-md">
+                  <h4 className="font-medium mb-2">Payment Summary</h4>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex justify-between">
+                      <span>{plans[selectedPlan as keyof typeof plans].name}</span>
+                      <span>Ksh {formatCurrency(price)}</span>
+                    </div>
+                    <div className="flex justify-between text-gray-600">
+                      <span>VAT (16%)</span>
+                      <span>Ksh {formatCurrency(vat)}</span>
+                    </div>
+                    <div className="flex justify-between font-bold pt-2 border-t mt-1">
+                      <span>Total</span>
+                      <span>Ksh {formatCurrency(total)}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+            
+            <CardFooter className="flex flex-col space-y-4">
+              <Button 
+                type="submit" 
+                className="w-full bg-green-600 hover:bg-green-700"
+                disabled={loading || !formValid}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
+                    Creating account...
+                  </>
+                ) : (
+                  "Sign Up"
+                )}
+              </Button>
+            </CardFooter>
+          </form>
+        ) : (
+          <CardContent className="space-y-4">
+            {!checkoutRequestId ? (
+              <div className="space-y-4">
+                <div className="p-4 bg-gray-50 rounded-md">
+                  <div className="font-medium">Plan Details</div>
+                  <div className="space-y-1 text-sm mt-2">
+                    <div className="flex justify-between">
+                      <span>{plans[selectedPlan as keyof typeof plans].name}</span>
+                      <span>Ksh {formatCurrency(price)}</span>
+                    </div>
+                    <div className="flex justify-between text-gray-600">
+                      <span>VAT (16%)</span>
+                      <span>Ksh {formatCurrency(vat)}</span>
+                    </div>
+                    <div className="flex justify-between font-bold pt-2 border-t mt-1">
+                      <span>Total</span>
+                      <span>Ksh {formatCurrency(total)}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="mpesa-phone">Confirm M-Pesa Number</Label>
+                  <Input 
+                    id="mpesa-phone" 
+                    type="tel" 
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    placeholder="254700000000"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    You'll receive a payment prompt on this number
+                  </p>
+                </div>
+                
+                <div className="flex flex-col gap-4">
+                  <Button 
+                    onClick={handlePayment} 
+                    className="w-full bg-green-600 hover:bg-green-700"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      "Pay with M-Pesa"
+                    )}
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => navigate("/dashboard")}
+                  >
+                    Skip for now (Free Trial)
+                  </Button>
+                  
+                  <BackNavigationButton
+                    to="#"
+                    label="Back to Registration"
+                    variant="ghost"
+                    className="mt-2"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setPaymentStep(false);
+                    }}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-4">
+                <h3 className="font-medium mb-2">M-Pesa payment initiated</h3>
+                {paymentStatus === "COMPLETED" ? (
+                  <div className="bg-green-100 text-green-800 p-3 rounded-md">
+                    Payment successful! Redirecting to dashboard...
+                  </div>
+                ) : (
+                  <>
+                    <p className="mb-4">
+                      Please check your phone and enter your PIN to complete the transaction.
+                    </p>
+                    <div className="flex items-center justify-center">
+                      <Loader2 className="h-6 w-6 animate-spin text-green-600 mr-2" />
+                      <span>Waiting for your payment...</span>
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </CardContent>
-          
-          <CardFooter className="flex flex-col space-y-4">
-            <Button 
-              type="submit" 
-              className="w-full bg-green-600 hover:bg-green-700"
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
-                  Creating account...
-                </>
-              ) : (
-                "Sign Up"
-              )}
-            </Button>
-          </CardFooter>
-        </form>
-      ) : (
-        <CardContent className="space-y-4">
-          {!checkoutRequestId ? (
-            <div className="space-y-4">
-              <div className="p-4 bg-gray-50 rounded-md">
-                <div className="font-medium">Plan Details</div>
-                <div className="flex justify-between mt-2">
-                  <span>{plans[selectedPlan as keyof typeof plans].name}</span>
-                  <span>Ksh {plans[selectedPlan as keyof typeof plans].price.toLocaleString()}</span>
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="mpesa-phone">Confirm M-Pesa Number</Label>
-                <Input 
-                  id="mpesa-phone" 
-                  type="tel" 
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  placeholder="254700000000"
-                />
-                <p className="text-xs text-muted-foreground">
-                  You'll receive a payment prompt on this number
-                </p>
-              </div>
-              
-              <div className="flex flex-col gap-4">
-                <Button 
-                  onClick={handlePayment} 
-                  className="w-full bg-green-600 hover:bg-green-700"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    "Pay with M-Pesa"
-                  )}
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={() => navigate("/dashboard")}
-                >
-                  Skip for now (Free Trial)
-                </Button>
-                
-                <BackNavigationButton
-                  to="#"
-                  label="Back to Registration"
-                  variant="ghost"
-                  className="mt-2"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setPaymentStep(false);
-                  }}
-                />
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-4">
-              <h3 className="font-medium mb-2">M-Pesa payment initiated</h3>
-              {paymentStatus === "COMPLETED" ? (
-                <div className="bg-green-100 text-green-800 p-3 rounded-md">
-                  Payment successful! Redirecting to dashboard...
-                </div>
-              ) : (
-                <>
-                  <p className="mb-4">
-                    Please check your phone and enter your PIN to complete the transaction.
-                  </p>
-                  <div className="flex items-center justify-center">
-                    <Loader2 className="h-6 w-6 animate-spin text-green-600 mr-2" />
-                    <span>Waiting for your payment...</span>
-                  </div>
-                </>
-              )}
-            </div>
-          )}
-        </CardContent>
-      )}
-    </Card>
+        )}
+      </Card>
+      
+      <GoogleAd className="mt-6 max-w-md mx-auto" />
+    </>
   );
 };
 
