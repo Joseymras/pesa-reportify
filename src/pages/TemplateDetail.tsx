@@ -1,411 +1,328 @@
 
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import MainNav from "@/components/MainNav";
 import Footer from "@/components/Footer";
-import BackButton from "@/components/BackButton";
-import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { FileText, Share2, Smartphone, Save, Image } from 'lucide-react';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription } from "@/components/ui/form";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Check, Download, Eye, Star } from "lucide-react";
+import BackNavigationButton from "@/components/BackNavigationButton";
+import NextNavigationButton from "@/components/NextNavigationButton";
 import { toast } from "sonner";
-import { useForm } from "react-hook-form";
+import { useAuth } from "@/context/AuthContext";
 
-interface TemplateForm {
-  title: string;
+interface Template {
+  id: string;
+  name: string;
   description: string;
-  colorTheme: string;
-  showContributors: boolean;
-  shareToWhatsApp: boolean;
-  logo: string;
-  messages: string;
+  features: string[];
+  previewImage: string;
+  detailImages: string[];
+  premium: boolean;
+  category: string;
 }
 
-const templates = {
-  "chama-contribution": {
-    name: "Chama Contribution",
-    description: "Track and manage recurring contributions for your investment group",
-    defaultData: {
-      title: "Monthly Chama Contribution",
-      description: "Track our investment group contributions",
-      colorTheme: "green",
-      showContributors: true,
-      shareToWhatsApp: true,
-      logo: "default",
-      messages: "Place your M-PESA messages here"
-    }
+const TEMPLATES: Record<string, Template> = {
+  "chama-basic": {
+    id: "chama-basic",
+    name: "Chama Basic",
+    description: "A simple yet powerful template for tracking chama contributions. Perfect for small groups that need to keep track of member payments and generate simple reports.",
+    features: [
+      "Track member contributions",
+      "Generate basic reports",
+      "Send WhatsApp notifications",
+      "View contribution history",
+      "Export data to text format"
+    ],
+    previewImage: "https://placehold.co/600x400/e2e8f0/64748b?text=Chama+Basic",
+    detailImages: [
+      "https://placehold.co/800x600/e2e8f0/64748b?text=Overview",
+      "https://placehold.co/800x600/e2e8f0/64748b?text=Reports",
+      "https://placehold.co/800x600/e2e8f0/64748b?text=Members"
+    ],
+    premium: false,
+    category: "Chama"
   },
-  "wedding-fundraiser": {
-    name: "Wedding Fundraiser",
-    description: "Manage contributions for wedding events",
-    defaultData: {
-      title: "Wedding Fundraiser",
-      description: "Support our special day",
-      colorTheme: "blue",
-      showContributors: true,
-      shareToWhatsApp: true,
-      logo: "default",
-      messages: "Place your M-PESA messages here"
-    }
+  "chama-premium": {
+    id: "chama-premium",
+    name: "Chama Premium",
+    description: "Advanced chama management template with comprehensive member management, detailed statistics, and automated reporting. Ideal for larger groups with complex needs.",
+    features: [
+      "Advanced member management",
+      "Detailed statistics and charts",
+      "Automated reporting schedules",
+      "Multi-group management",
+      "Custom notification templates",
+      "Payment reminder system",
+      "Export data in multiple formats"
+    ],
+    previewImage: "https://placehold.co/600x400/e2e8f0/64748b?text=Chama+Premium",
+    detailImages: [
+      "https://placehold.co/800x600/e2e8f0/64748b?text=Dashboard",
+      "https://placehold.co/800x600/e2e8f0/64748b?text=Analytics",
+      "https://placehold.co/800x600/e2e8f0/64748b?text=Members",
+      "https://placehold.co/800x600/e2e8f0/64748b?text=Reports"
+    ],
+    premium: true,
+    category: "Chama"
   },
-  "daily-challenge": {
-    name: "Daily Challenge",
-    description: "Track daily contributions for short-term saving goals",
-    defaultData: {
-      title: "30-Day Money Challenge",
-      description: "Daily savings challenge for our group",
-      colorTheme: "purple",
-      showContributors: true,
-      shareToWhatsApp: true,
-      logo: "default",
-      messages: "Place your M-PESA messages here"
-    }
+  "wedding-contribution": {
+    id: "wedding-contribution",
+    name: "Wedding Contribution",
+    description: "Designed specifically for wedding contributions. Track donors, send thank you messages, and manage your wedding budget all in one place.",
+    features: [
+      "Track wedding contributions",
+      "Send automated thank you messages",
+      "Manage wedding budget",
+      "Generate gift lists",
+      "Track RSVPs"
+    ],
+    previewImage: "https://placehold.co/600x400/e2e8f0/64748b?text=Wedding+Contribution",
+    detailImages: [
+      "https://placehold.co/800x600/e2e8f0/64748b?text=Overview",
+      "https://placehold.co/800x600/e2e8f0/64748b?text=Contributors",
+      "https://placehold.co/800x600/e2e8f0/64748b?text=Budget"
+    ],
+    premium: false,
+    category: "Events"
   },
-  "medical-fund": {
-    name: "Medical Fund",
-    description: "Manage contributions for medical support",
-    defaultData: {
-      title: "Medical Support Fund",
-      description: "Contributions for medical assistance",
-      colorTheme: "red",
-      showContributors: true,
-      shareToWhatsApp: true,
-      logo: "default",
-      messages: "Place your M-PESA messages here"
-    }
-  },
-  "school-fees": {
-    name: "School Fees",
-    description: "Track education contribution payments",
-    defaultData: {
-      title: "School Fees Collection",
-      description: "Track education contribution payments",
-      colorTheme: "amber",
-      showContributors: true,
-      shareToWhatsApp: true,
-      logo: "default",
-      messages: "Place your M-PESA messages here"
-    }
-  },
-  "church-offering": {
-    name: "Church Offering",
-    description: "Track church contributions and tithes",
-    defaultData: {
-      title: "Church Contributions",
-      description: "Track tithes and offerings",
-      colorTheme: "indigo",
-      showContributors: false,
-      shareToWhatsApp: true,
-      logo: "default",
-      messages: "Place your M-PESA messages here"
-    }
-  }
+  // Add more template details as needed
 };
 
 const TemplateDetail = () => {
   const { templateId } = useParams<{ templateId: string }>();
+  const [activeTab, setActiveTab] = useState("overview");
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("customize");
-  const [previewData, setPreviewData] = useState<any>(null);
+  const { user } = useAuth();
   
-  const form = useForm<TemplateForm>({
-    defaultValues: templateId && templates[templateId as keyof typeof templates] 
-      ? templates[templateId as keyof typeof templates].defaultData 
-      : {
-          title: "",
-          description: "",
-          colorTheme: "green",
-          showContributors: true,
-          shareToWhatsApp: false,
-          logo: "default",
-          messages: ""
-        }
-  });
-
+  const template = TEMPLATES[templateId || ""] || null;
+  
   useEffect(() => {
-    if (!templateId || !templates[templateId as keyof typeof templates]) {
-      navigate('/templates');
-    } else {
-      // Set preview data for the initial render
-      setPreviewData(form.getValues());
+    if (!template) {
+      toast.error("Template not found");
+      navigate("/templates");
     }
-  }, [templateId, navigate]);
-
-  const onSubmit = (data: TemplateForm) => {
-    toast.success("Template saved successfully!");
-    setPreviewData(data);
-    // In a real app, this would save to the backend
-  };
-
-  const handleShareToWhatsApp = () => {
-    // This would integrate with WhatsApp API in a real implementation
-    toast.success("Report shared to WhatsApp group!");
-  };
-
-  if (!templateId || !templates[templateId as keyof typeof templates]) {
+  }, [template, navigate]);
+  
+  if (!template) {
     return null;
   }
-
-  const template = templates[templateId as keyof typeof templates];
-
+  
+  const handleUseTemplate = () => {
+    if (template.premium && (!user)) {
+      toast.error("This is a premium template. Please upgrade your account to use it.");
+      navigate("/pricing");
+      return;
+    }
+    
+    toast.success(`${template.name} template selected. Redirecting to dashboard...`);
+    setTimeout(() => {
+      navigate("/dashboard", { state: { templateSelected: template.id } });
+    }, 1500);
+  };
+  
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-green-50 to-white">
       <MainNav />
       
-      <main className="container mx-auto px-4 py-8 flex-grow">
+      <main className="flex-grow container mx-auto px-4 py-8">
         <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-3xl font-bold">{template.name}</h1>
-          <BackButton to="/templates" label="Back to Templates" />
+          <div className="flex items-center gap-2">
+            <BackNavigationButton to="/templates" label="All Templates" />
+            {template.premium && (
+              <span className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-1 text-xs font-medium text-yellow-800">
+                Premium
+              </span>
+            )}
+          </div>
+          <Button asChild variant="outline" size="sm">
+            <a href="#" onClick={(e) => { e.preventDefault(); toast.info("Template demo downloaded"); }}>
+              <Download className="h-4 w-4 mr-2" />
+              Download Sample
+            </a>
+          </Button>
         </div>
         
-        <p className="mb-6 text-muted-foreground">{template.description}</p>
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">{template.name}</h1>
+            <p className="text-muted-foreground mb-6">{template.description}</p>
+            
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-3">Features</h3>
+              <ul className="space-y-2">
+                {template.features.map((feature, index) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            
+            <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
+              <Button 
+                onClick={handleUseTemplate} 
+                className="flex-1 bg-green-600 hover:bg-green-700"
+                size="lg"
+              >
+                Use This Template
+              </Button>
+              <Button variant="outline" size="lg" className="flex-1" asChild>
+                <a href="#preview">
+                  <Eye className="h-5 w-5 mr-2" />
+                  Preview
+                </a>
+              </Button>
+            </div>
+            
+            {template.premium && !user && (
+              <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-md">
+                <p className="text-amber-800 text-sm">
+                  This is a premium template. <a href="/pricing" className="underline font-medium">Upgrade your account</a> to access all premium features.
+                </p>
+              </div>
+            )}
+          </div>
+          
+          <div className="rounded-lg overflow-hidden border">
+            <img 
+              src={template.previewImage} 
+              alt={template.name} 
+              className="w-full h-auto object-cover aspect-video"
+            />
+          </div>
+        </div>
         
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-8">
-            <TabsTrigger value="customize">Customize</TabsTrigger>
-            <TabsTrigger value="messages">M-PESA Messages</TabsTrigger>
-            <TabsTrigger value="preview">Preview Report</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="customize">
-            <Card>
-              <CardContent className="pt-6">
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    <FormField
-                      control={form.control}
-                      name="title"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Report Title</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Enter report title" {...field} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Description</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Brief description of this report" 
-                              {...field}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="colorTheme"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Color Theme</FormLabel>
-                          <Select 
-                            onValueChange={field.onChange} 
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select a color theme" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="green">Green</SelectItem>
-                              <SelectItem value="blue">Blue</SelectItem>
-                              <SelectItem value="purple">Purple</SelectItem>
-                              <SelectItem value="red">Red</SelectItem>
-                              <SelectItem value="amber">Amber</SelectItem>
-                              <SelectItem value="indigo">Indigo</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="showContributors"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                          <div className="space-y-0.5">
-                            <FormLabel className="text-base">
-                              Show Contributors
-                            </FormLabel>
-                            <FormDescription>
-                              Display names of contributors in the report
-                            </FormDescription>
-                          </div>
-                          <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="shareToWhatsApp"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                          <div className="space-y-0.5">
-                            <FormLabel className="text-base">
-                              Share to WhatsApp
-                            </FormLabel>
-                            <FormDescription>
-                              Automatically share reports to your WhatsApp group
-                            </FormDescription>
-                          </div>
-                          <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <div className="flex justify-end">
-                      <Button type="submit" className="bg-green-600 hover:bg-green-700">
-                        <Save className="mr-2 h-4 w-4" />
-                        Save Template
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="messages">
-            <Card>
-              <CardContent className="pt-6">
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    <FormField
-                      control={form.control}
-                      name="messages"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Paste M-PESA Messages</FormLabel>
-                          <FormDescription>
-                            Paste all the M-PESA transaction messages here. Our system will automatically extract the relevant information.
-                          </FormDescription>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Paste your M-PESA messages here..." 
-                              className="min-h-[300px]"
-                              {...field}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <div className="flex justify-end gap-4">
-                      <Button variant="outline" onClick={() => setActiveTab("customize")}>
-                        Back to Customize
-                      </Button>
-                      <Button type="submit" className="bg-green-600 hover:bg-green-700">
-                        <FileText className="mr-2 h-4 w-4" />
-                        Generate Report
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="preview">
-            <Card className="mb-6">
-              <CardContent className="pt-6">
-                {previewData ? (
-                  <div className="space-y-6">
-                    <div className="p-6 border rounded-lg bg-white">
-                      <div className={`mb-4 text-${previewData.colorTheme}-600 text-2xl font-bold text-center`}>
-                        {previewData.title}
-                      </div>
-                      
-                      <p className="text-center text-muted-foreground mb-6">
-                        {previewData.description}
-                      </p>
-                      
-                      <div className="border-t border-b py-4 my-4">
-                        <div className="flex justify-between font-semibold mb-3">
-                          <span>Total Amount Collected</span>
-                          <span className="text-green-600">Ksh 45,000</span>
-                        </div>
-                        
-                        <div className="flex justify-between text-sm">
-                          <span>Number of Contributors</span>
-                          <span>15</span>
-                        </div>
-                      </div>
-                      
-                      {previewData.showContributors && (
-                        <div className="mt-6">
-                          <h3 className="font-medium mb-2">Contributors</h3>
-                          <div className="space-y-2 max-h-[200px] overflow-y-auto">
-                            {[
-                              { name: "John Doe", amount: 5000, date: "2023-10-15" },
-                              { name: "Jane Smith", amount: 3000, date: "2023-10-14" },
-                              { name: "David Mwangi", amount: 6000, date: "2023-10-13" }
-                            ].map((contributor, idx) => (
-                              <div key={idx} className="flex justify-between text-sm border-b pb-1">
-                                <span>{contributor.name}</span>
-                                <span>Ksh {contributor.amount.toLocaleString()}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      
-                      <div className="text-center text-xs text-muted-foreground mt-8">
-                        Generated with PesaLytics on {new Date().toLocaleDateString()}
-                      </div>
-                    </div>
-                    
-                    <div className="flex justify-center gap-4">
-                      <Button variant="outline">
-                        <Image className="mr-2 h-4 w-4" />
-                        Download as Image
-                      </Button>
-                      
-                      <Button 
-                        className="bg-green-600 hover:bg-green-700"
-                        onClick={handleShareToWhatsApp}
-                      >
-                        <Share2 className="mr-2 h-4 w-4" />
-                        Share to WhatsApp
-                      </Button>
-                    </div>
+        <div id="preview" className="mt-12">
+          <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="mb-4">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="preview">Preview</TabsTrigger>
+              <TabsTrigger value="reviews">Reviews</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="overview">
+              <div className="space-y-6">
+                <div className="prose max-w-none">
+                  <h3>About this template</h3>
+                  <p>The {template.name} template is designed to help you efficiently manage and track contributions for your {template.category.toLowerCase()} group. With intuitive interfaces and automated calculations, you'll save time and reduce errors in your reporting.</p>
+                  
+                  <h3>How it works</h3>
+                  <ol>
+                    <li>Paste your M-PESA messages into the input field</li>
+                    <li>The system automatically parses transaction details</li>
+                    <li>Review the generated report with accurate calculations</li>
+                    <li>Share the report with your group via WhatsApp or download it</li>
+                  </ol>
+                  
+                  <h3>Who it's for</h3>
+                  <p>This template is perfect for {template.category.toLowerCase()} treasurers, secretaries, and organizers who need a quick and reliable way to process M-PESA contributions and generate clear reports for their members.</p>
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="preview">
+              <div className="space-y-6">
+                <div className="aspect-video rounded-lg overflow-hidden border">
+                  <img 
+                    src={template.detailImages[activeImageIndex]} 
+                    alt={`${template.name} preview ${activeImageIndex + 1}`} 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                
+                <div className="flex gap-2 overflow-x-auto pb-2">
+                  {template.detailImages.map((image, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setActiveImageIndex(index)}
+                      className={`relative rounded-md overflow-hidden border-2 flex-shrink-0 w-24 h-16 ${activeImageIndex === index ? 'border-green-600' : 'border-transparent'}`}
+                    >
+                      <img 
+                        src={image} 
+                        alt={`Thumbnail ${index + 1}`} 
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="reviews">
+              <div className="space-y-6">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="flex items-center">
+                    <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                    <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                    <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                    <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                    <Star className="h-5 w-5 text-gray-300" />
                   </div>
-                ) : (
-                  <div className="text-center py-12 text-muted-foreground">
-                    Customize your template and generate a report to see the preview
+                  <span className="text-lg font-medium">4.0 out of 5</span>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="p-4 border rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center">
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      </div>
+                      <span className="font-medium">John M.</span>
+                    </div>
+                    <p>This template has saved me so much time as our chama treasurer. Now it takes seconds to generate reports that used to take me hours.</p>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                  
+                  <div className="p-4 border rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center">
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <Star className="h-4 w-4 text-gray-300" />
+                      </div>
+                      <span className="font-medium">Sarah K.</span>
+                    </div>
+                    <p>Very accurate calculations and easy to use. The WhatsApp integration is fantastic for keeping our group updated.</p>
+                  </div>
+                  
+                  <div className="p-4 border rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center">
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <Star className="h-4 w-4 text-gray-300" />
+                        <Star className="h-4 w-4 text-gray-300" />
+                      </div>
+                      <span className="font-medium">David W.</span>
+                    </div>
+                    <p>Good template but would love to see more customization options for the reports. Overall it works well for our needs.</p>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+        
+        <div className="mt-12 flex justify-between">
+          <BackNavigationButton to="/templates" label="Back to Templates" />
+          <NextNavigationButton 
+            to="#" 
+            label="Use Template" 
+            onClick={(e) => {
+              e.preventDefault();
+              handleUseTemplate();
+            }}
+          />
+        </div>
       </main>
       
       <Footer />
