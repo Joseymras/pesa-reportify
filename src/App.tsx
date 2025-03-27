@@ -11,6 +11,8 @@ import Demo from "./pages/Demo";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import TawkChat from "./components/TawkChat";
+import Pricing from "./pages/Pricing";
+import Checkout from "./pages/Checkout";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +28,8 @@ const App = () => (
           <Route path="/signup" element={<Signup />} />
           <Route path="/demo" element={<Demo />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/checkout/:planId" element={<Checkout />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

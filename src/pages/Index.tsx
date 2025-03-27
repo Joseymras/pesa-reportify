@@ -103,6 +103,20 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Premium Section */}
+      <section className="container mx-auto px-4 py-16 text-center">
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-8 md:p-12">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">Unlock Premium Features</h2>
+          <p className="mb-8 text-muted-foreground max-w-2xl mx-auto">
+            Subscribe to our premium plans and get access to unlimited reports, advanced templates,
+            and priority support.
+          </p>
+          <Button asChild size="lg" className="bg-green-600 hover:bg-green-700">
+            <Link to="/pricing">View Pricing Plans</Link>
+          </Button>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="container mx-auto px-4 py-16 text-center">
         <h2 className="mb-4 text-3xl font-bold">Ready to Simplify Your Contribution Reports?</h2>
