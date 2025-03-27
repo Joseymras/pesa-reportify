@@ -15,6 +15,8 @@ import Pricing from "./pages/Pricing";
 import Checkout from "./pages/Checkout";
 import Templates from "./pages/Templates";
 import TemplateDetail from "./pages/TemplateDetail";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { AuthProvider } from "./context/AuthContext";
 
 const queryClient = new QueryClient();
 
@@ -24,24 +26,40 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/demo" element={<Demo />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/checkout/:planId" element={<Checkout />} />
-          <Route path="/templates" element={<Templates />} />
-          <Route path="/templates/:templateId" element={<TemplateDetail />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/demo" element={<Demo />} />
+            <Route 
+              path="/dashboard" 
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route 
+              path="/checkout/:planId" 
+              element={
+                <ProtectedRoute>
+                  <Checkout />
+                </ProtectedRoute>
+              } 
+            />
+            <Route path="/templates" element={<Templates />} />
+            <Route path="/templates/:templateId" element={<TemplateDetail />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          <TawkChat 
+            propertyId="64f5d9a0a0c3e16c4b5c7c90" 
+            widgetId="1h1etbqvd" 
+          />
+        </AuthProvider>
       </BrowserRouter>
-      <TawkChat 
-        propertyId="64f5d9a0a0c3e16c4b5c7c90" 
-        widgetId="1h1etbqvd" 
-      />
     </TooltipProvider>
   </QueryClientProvider>
 );

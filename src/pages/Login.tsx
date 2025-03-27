@@ -8,20 +8,25 @@ import { Label } from "@/components/ui/label";
 import MpesaLogo from "@/components/MpesaLogo";
 import MainNav from "@/components/MainNav";
 import Footer from "@/components/Footer";
+import { useAuth } from "@/context/AuthContext";
+import { Loader2 } from "lucide-react";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const { signIn } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // TODO: Implement actual login logic with backend
-    setTimeout(() => {
+    try {
+      await signIn(email, password);
+    } catch (error) {
+      console.error("Login failed:", error);
+    } finally {
       setLoading(false);
-      console.log("Login attempted with:", { email, password });
-    }, 1000);
+    }
   };
 
   return (
@@ -78,7 +83,14 @@ const Login = () => {
                 className="w-full bg-green-600 hover:bg-green-700"
                 disabled={loading}
               >
-                {loading ? "Signing in..." : "Sign In"}
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
+                    Signing in...
+                  </>
+                ) : (
+                  "Sign In"
+                )}
               </Button>
               <div className="text-center text-sm">
                 Don't have an account?{" "}
