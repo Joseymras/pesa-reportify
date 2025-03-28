@@ -187,8 +187,8 @@ const TemplateDetail = () => {
     setLoading(true);
     
     try {
-      // Save user's template selection to their profile
-      const { error } = await supabase
+      // Save user's template selection to their profile using type assertion
+      const { error } = await (supabase as any)
         .from('user_preferences')
         .upsert({ 
           user_id: user.id,

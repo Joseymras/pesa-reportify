@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Database } from "@/integrations/supabase/types";
 
 interface TemplatePreview {
   id: string;
@@ -61,7 +62,8 @@ const TemplateSelector = () => {
       if (!user) return;
       
       try {
-        const { data, error } = await supabase
+        // Using type assertion to work around the TypeScript limitations
+        const { data, error } = await (supabase as any)
           .from('user_preferences')
           .select('*')
           .eq('user_id', user.id)
@@ -94,8 +96,8 @@ const TemplateSelector = () => {
     
     try {
       if (user) {
-        // Save user's template selection
-        const { error } = await supabase
+        // Save user's template selection using type assertion
+        const { error } = await (supabase as any)
           .from('user_preferences')
           .upsert({ 
             user_id: user.id,
