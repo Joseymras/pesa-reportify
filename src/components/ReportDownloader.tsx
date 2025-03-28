@@ -5,18 +5,26 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Download, Share } from "lucide-react";
+import { Download, Share, FileText } from "lucide-react";
 import { toast } from "sonner";
+import { SavedReportType } from "@/types/financialTypes";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import jsPDF from "jspdf";
 
 type ReportData = {
   title: string;
   date: string;
   data: Record<string, any>;
-  type: 'loan' | 'savings' | 'budget' | 'currency';
+  type: SavedReportType;
 };
 
 interface ReportDownloaderProps {
-  type: 'loan' | 'savings' | 'budget' | 'currency';
+  type: SavedReportType;
   data: Record<string, any>;
   onSave?: (reportName: string, includePersonalInfo: boolean) => void;
 }
@@ -38,7 +46,7 @@ export function ReportDownloader({ type, data, onSave }: ReportDownloaderProps) 
     return report;
   };
 
-  const handleDownload = () => {
+  const handleDownloadJson = () => {
     const report = generateReport();
     const reportBlob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(reportBlob);
@@ -50,7 +58,95 @@ export function ReportDownloader({ type, data, onSave }: ReportDownloaderProps) 
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     
-    toast.success("Report downloaded successfully!");
+    toast.success("Report downloaded as JSON successfully!");
+    setIsDialogOpen(false);
+  };
+
+  const handleDownloadPdf = () => {
+    const report = generateReport();
+    const doc = new jsPDF();
+    
+    // Add title and date
+    doc.setFontSize(20);
+    doc.text(reportName, 20, 20);
+    doc.setFontSize(12);
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 30);
+    
+    // Add report type
+    doc.text(`Report Type: ${type.charAt(0).toUpperCase() + type.slice(1)}`, 20, 40);
+    
+    // Add report data
+    let yPosition = 50;
+    
+    // Format the data nicely for PDF
+    switch(type) {
+      case 'loan':
+        doc.text(`Loan Amount: KES ${data.loanAmount.toLocaleString()}`, 20, yPosition);
+        yPosition += 10;
+        doc.text(`Loan Term: ${data.loanTermMonths} months`, 20, yPosition);
+        yPosition += 10;
+        doc.text(`Interest Rate: ${data.interestRate}%`, 20, yPosition);
+        yPosition += 10;
+        doc.text(`Processing Fee: ${data.processingFee ? 'Yes (2.5%)' : 'No'}`, 20, yPosition);
+        yPosition += 10;
+        doc.text(`Monthly Payment: KES ${data.result.monthlyPayment.toLocaleString(undefined, {maximumFractionDigits: 2})}`, 20, yPosition);
+        yPosition += 10;
+        doc.text(`Total Repayment: KES ${data.result.totalRepayment.toLocaleString(undefined, {maximumFractionDigits: 2})}`, 20, yPosition);
+        yPosition += 10;
+        doc.text(`Total Interest: KES ${data.result.totalInterest.toLocaleString(undefined, {maximumFractionDigits: 2})}`, 20, yPosition);
+        break;
+        
+      case 'savings':
+        doc.text(`Initial Deposit: KES ${data.initialDeposit.toLocaleString()}`, 20, yPosition);
+        yPosition += 10;
+        doc.text(`Monthly Contribution: KES ${data.monthlyContribution.toLocaleString()}`, 20, yPosition);
+        yPosition += 10;
+        doc.text(`Time Period: ${data.savingsYears} years`, 20, yPosition);
+        yPosition += 10;
+        doc.text(`Interest Rate: ${data.savingsRate}%`, 20, yPosition);
+        yPosition += 10;
+        doc.text(`Future Value: KES ${data.result.futureValue.toLocaleString(undefined, {maximumFractionDigits: 2})}`, 20, yPosition);
+        yPosition += 10;
+        doc.text(`Total Contributions: KES ${data.result.totalContributions.toLocaleString(undefined, {maximumFractionDigits: 2})}`, 20, yPosition);
+        yPosition += 10;
+        doc.text(`Interest Earned: KES ${data.result.interestEarned.toLocaleString(undefined, {maximumFractionDigits: 2})}`, 20, yPosition);
+        break;
+        
+      case 'budget':
+        doc.text(`Monthly Income: KES ${data.monthlyIncome.toLocaleString()}`, 20, yPosition);
+        yPosition += 10;
+        doc.text(`Essential Expenses: KES ${data.essentialExpenses.toLocaleString()}`, 20, yPosition);
+        yPosition += 10;
+        doc.text(`Savings Target: KES ${data.savingsTarget.toLocaleString()}`, 20, yPosition);
+        yPosition += 10;
+        doc.text(`Discretionary Spending: KES ${Math.max(0, data.result.discretionarySpending).toLocaleString()}`, 20, yPosition);
+        yPosition += 10;
+        doc.text(`Budget Balanced: ${data.result.isBudgetBalanced ? 'Yes' : 'No'}`, 20, yPosition);
+        yPosition += 10;
+        doc.text(`Essentials: ${data.result.essentialPercent.toFixed(1)}%`, 20, yPosition);
+        yPosition += 10;
+        doc.text(`Savings: ${data.result.savingsPercent.toFixed(1)}%`, 20, yPosition);
+        yPosition += 10;
+        doc.text(`Discretionary: ${data.result.discretionaryPercent.toFixed(1)}%`, 20, yPosition);
+        break;
+        
+      case 'currency':
+        doc.text(`Amount: ${data.amount} ${data.fromCurrency}`, 20, yPosition);
+        yPosition += 10;
+        doc.text(`Converted To: ${data.convertedAmount.toFixed(4)} ${data.toCurrency}`, 20, yPosition);
+        yPosition += 10;
+        doc.text(`Exchange Rate: 1 ${data.fromCurrency} = ${data.exchangeRate.toFixed(6)} ${data.toCurrency}`, 20, yPosition);
+        break;
+    }
+    
+    // Add footer
+    doc.setFontSize(10);
+    doc.text('Generated by KenyaPesa Financial Tools', 20, 280);
+    
+    // Save the PDF
+    doc.save(`${reportName.replace(/\s+/g, "_")}.pdf`);
+    
+    toast.success("Report downloaded as PDF successfully!");
     setIsDialogOpen(false);
   };
 
@@ -106,10 +202,25 @@ export function ReportDownloader({ type, data, onSave }: ReportDownloaderProps) 
           </div>
         </div>
         <DialogFooter className="flex flex-col sm:flex-row gap-2">
-          <Button variant="outline" onClick={handleDownload} className="w-full sm:w-auto">
-            <Download className="h-4 w-4 mr-2" />
-            Download JSON
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="w-full sm:w-auto">
+                <Download className="h-4 w-4 mr-2" />
+                Download
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={handleDownloadJson}>
+                <FileText className="h-4 w-4 mr-2" />
+                JSON Format
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleDownloadPdf}>
+                <FileText className="h-4 w-4 mr-2" />
+                PDF Format
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
           {onSave && (
             <Button onClick={handleSave} className="w-full sm:w-auto">
               Save to Account
