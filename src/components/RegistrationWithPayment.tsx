@@ -20,6 +20,7 @@ const RegistrationWithPayment = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [referralCode, setReferralCode] = useState("");
   const [selectedPlan, setSelectedPlan] = useState("free");
   const [loading, setLoading] = useState(false);
   const [paymentStep, setPaymentStep] = useState(false);
@@ -31,8 +32,9 @@ const RegistrationWithPayment = () => {
 
   const plans = {
     free: { name: "Free Plan", price: 0 },
-    premium: { name: "Premium Plan", price: 499 },
-    business: { name: "Business Plan", price: 999 }
+    daily: { name: "Daily Plan", price: 49 },
+    monthly: { name: "Monthly Plan", price: 299 },
+    yearly: { name: "Yearly Plan", price: 2999 }
   };
 
   // Check if user is already logged in
@@ -117,9 +119,9 @@ const RegistrationWithPayment = () => {
       const { data, error } = await supabase.functions.invoke("process-payment", {
         body: {
           phoneNumber: formattedPhone,
-          amount: plans[selectedPlan as keyof typeof plans].price,
           planId: selectedPlan,
-          email
+          email,
+          referralCode: referralCode || undefined
         }
       });
       
@@ -137,6 +139,12 @@ const RegistrationWithPayment = () => {
         
         // Start checking payment status
         checkPaymentStatus(data.CheckoutRequestID);
+      } else if (data.free) {
+        // Handle free plan
+        toast.success("Free plan selected. Redirecting to dashboard...");
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 2000);
       } else {
         throw new Error("Failed to initiate payment");
       }
@@ -266,8 +274,9 @@ const RegistrationWithPayment = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="free">Free Plan - Ksh 0</SelectItem>
-                    <SelectItem value="premium">Premium Plan - Ksh 499</SelectItem>
-                    <SelectItem value="business">Business Plan - Ksh 999</SelectItem>
+                    <SelectItem value="daily">Daily Plan - Ksh 49</SelectItem>
+                    <SelectItem value="monthly">Monthly Plan - Ksh 299</SelectItem>
+                    <SelectItem value="yearly">Yearly Plan - Ksh 2999</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -287,6 +296,17 @@ const RegistrationWithPayment = () => {
                   </p>
                 </div>
               )}
+
+              <div className="space-y-2">
+                <Label htmlFor="referral">Referral Code (Optional)</Label>
+                <Input 
+                  id="referral" 
+                  type="text" 
+                  placeholder="Enter referral code if you have one" 
+                  value={referralCode}
+                  onChange={(e) => setReferralCode(e.target.value)}
+                />
+              </div>
               
               {selectedPlan !== "free" && (
                 <div className="p-4 bg-gray-50 rounded-md">

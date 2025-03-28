@@ -9,6 +9,16 @@ const corsHeaders = {
 const CHPTER_API_KEY = Deno.env.get("CHPTER_API_KEY");
 const CHPTER_API_URL = "https://api.chpter.co/v1";
 
+// Plan configurations
+const PLAN_CONFIGS = {
+  daily: { name: "Daily Plan", price: 49, duration: "daily" },
+  monthly: { name: "Monthly Plan", price: 299, duration: "monthly" },
+  yearly: { name: "Yearly Plan", price: 2999, duration: "yearly" },
+  premium: { name: "Legacy Premium Plan", price: 499, duration: "monthly" },
+  business: { name: "Legacy Business Plan", price: 999, duration: "monthly" },
+  free: { name: "Free Plan", price: 0, duration: "unlimited" }
+};
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -16,12 +26,22 @@ serve(async (req) => {
   }
   
   try {
-    const { phoneNumber, amount, planId, email } = await req.json();
+    const { phoneNumber, planId, email, referralCode } = await req.json();
     
-    if (!phoneNumber || !amount || !planId) {
+    if (!phoneNumber || !planId) {
       return new Response(
         JSON.stringify({ error: "Missing required fields" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    const planConfig = PLAN_CONFIGS[planId as keyof typeof PLAN_CONFIGS] || PLAN_CONFIGS.monthly;
+    const amount = planConfig.price;
+    
+    if (amount === 0) {
+      return new Response(
+        JSON.stringify({ free: true, message: "Free plan selected, no payment required" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
     
@@ -43,13 +63,15 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         phone: formattedPhone,
-        amount: parseFloat(amount),
+        amount: parseFloat(amount.toString()),
         reference: `PesaLytics-${planId}`,
-        description: `Payment for ${planId} plan on PesaLytics`,
+        description: `Payment for ${planConfig.name} (${planConfig.duration}) on PesaLytics`,
         callback_url: `${req.headers.get("origin") || "https://pesalytics.app"}/api/payment-callback`,
         metadata: {
           email: email || "",
-          plan_id: planId
+          plan_id: planId,
+          referral_code: referralCode || "",
+          duration: planConfig.duration
         }
       }),
     });
