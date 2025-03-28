@@ -3,8 +3,11 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Smartphone, Plus, Trash2, QrCode } from "lucide-react";
+import { Smartphone, Plus, Trash2, QrCode, Upload, Share2 } from "lucide-react";
 import { toast } from "sonner";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface WhatsAppGroup {
   id: string;
@@ -14,15 +17,18 @@ interface WhatsAppGroup {
 
 interface WhatsAppLinkingProps {
   onIntegrationChange?: (integrated: boolean) => void;
+  onDirectShare?: (groupId: string, content: string) => Promise<boolean>;
 }
 
-const WhatsAppLinking = ({ onIntegrationChange }: WhatsAppLinkingProps) => {
+const WhatsAppLinking = ({ onIntegrationChange, onDirectShare }: WhatsAppLinkingProps) => {
   const [groups, setGroups] = useState<WhatsAppGroup[]>([
     { id: '1', name: 'Family Contributions', active: true },
     { id: '2', name: 'Office Chama', active: false }
   ]);
   const [newGroupName, setNewGroupName] = useState('');
   const [showQRCode, setShowQRCode] = useState(false);
+  const [autoShareEnabled, setAutoShareEnabled] = useState(false);
+  const [shareInProgress, setShareInProgress] = useState(false);
   
   const addGroup = () => {
     if (!newGroupName.trim()) {
@@ -73,6 +79,28 @@ const WhatsAppLinking = ({ onIntegrationChange }: WhatsAppLinkingProps) => {
   const handleConnectViaQR = () => {
     setShowQRCode(!showQRCode);
   };
+  
+  const handleShareToGroup = async (groupId: string, content: string) => {
+    if (!onDirectShare) return false;
+    
+    setShareInProgress(true);
+    try {
+      const success = await onDirectShare(groupId, content);
+      if (success) {
+        toast.success(`Report shared to ${groups.find(g => g.id === groupId)?.name}`);
+        return true;
+      } else {
+        toast.error("Failed to share report");
+        return false;
+      }
+    } catch (error) {
+      console.error("Error sharing to WhatsApp:", error);
+      toast.error("An error occurred while sharing the report");
+      return false;
+    } finally {
+      setShareInProgress(false);
+    }
+  };
 
   return (
     <Card>
@@ -102,6 +130,18 @@ const WhatsAppLinking = ({ onIntegrationChange }: WhatsAppLinkingProps) => {
                 >
                   {group.active ? "Active" : "Inactive"}
                 </Button>
+                {group.active && onDirectShare && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1"
+                    onClick={() => handleShareToGroup(group.id, "Latest report from PesaLytics")}
+                    disabled={shareInProgress}
+                  >
+                    <Share2 className="h-4 w-4" />
+                    Share
+                  </Button>
+                )}
                 <Button 
                   variant="outline" 
                   size="sm"
@@ -144,6 +184,15 @@ const WhatsAppLinking = ({ onIntegrationChange }: WhatsAppLinkingProps) => {
                 <Plus className="h-4 w-4 mr-2" />
                 Add
               </Button>
+            </div>
+            
+            <div className="flex items-center space-x-2 mt-2">
+              <Switch 
+                id="auto-share" 
+                checked={autoShareEnabled}
+                onCheckedChange={setAutoShareEnabled}
+              />
+              <Label htmlFor="auto-share">Automatically share new reports</Label>
             </div>
           </div>
         </div>
