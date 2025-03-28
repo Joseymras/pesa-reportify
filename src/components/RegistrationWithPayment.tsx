@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -37,14 +36,12 @@ const RegistrationWithPayment = () => {
     yearly: { name: "Yearly Plan", price: 2999 }
   };
 
-  // Check if user is already logged in
   useEffect(() => {
     if (user) {
       navigate("/dashboard");
     }
   }, [user, navigate]);
 
-  // Validate form
   useEffect(() => {
     const isValid = 
       email.trim() !== "" && 
@@ -59,12 +56,10 @@ const RegistrationWithPayment = () => {
   const formatPhoneNumber = (input: string): string => {
     let phone = input.replace(/\D/g, '');
     
-    // If starts with 0, replace with 254
     if (phone.startsWith('0')) {
       phone = '254' + phone.substring(1);
     }
     
-    // If doesn't start with 254, add it
     if (!phone.startsWith('254') && phone.length > 0) {
       phone = '254' + phone;
     }
@@ -88,7 +83,6 @@ const RegistrationWithPayment = () => {
     setLoading(true);
     
     try {
-      // Sign up the user
       await signUp(email, password);
       
       if (selectedPlan === "free") {
@@ -109,7 +103,7 @@ const RegistrationWithPayment = () => {
     const formattedPhone = formatPhoneNumber(phoneNumber);
     
     if (!formattedPhone || formattedPhone.length < 12) {
-      toast.error("Please enter a valid M-Pesa number");
+      toast.error("Please enter a valid phone number");
       return;
     }
 
@@ -137,10 +131,8 @@ const RegistrationWithPayment = () => {
         setCheckoutRequestId(data.CheckoutRequestID);
         toast.info("M-Pesa prompt sent to your phone. Please enter your PIN to complete payment.");
         
-        // Start checking payment status
         checkPaymentStatus(data.CheckoutRequestID);
       } else if (data.free) {
-        // Handle free plan
         toast.success("Free plan selected. Redirecting to dashboard...");
         setTimeout(() => {
           navigate("/dashboard");
@@ -183,11 +175,9 @@ const RegistrationWithPayment = () => {
       }
     };
     
-    // Check immediately
     const isComplete = await checkStatus();
     if (isComplete) return;
     
-    // If not complete, keep checking every 5 seconds
     const intervalId = setInterval(async () => {
       const isComplete = await checkStatus();
       if (isComplete) {
@@ -195,13 +185,11 @@ const RegistrationWithPayment = () => {
       }
     }, 5000);
     
-    // Clear interval after 2 minutes (timeout)
     setTimeout(() => {
       clearInterval(intervalId);
     }, 120000);
   };
 
-  // Calculate tax and total for the selected plan
   const price = plans[selectedPlan as keyof typeof plans].price;
   const vat = calculateFinancial('multiply', price, 0.16);
   const total = calculateFinancial('add', price, vat);
@@ -283,7 +271,7 @@ const RegistrationWithPayment = () => {
               
               {selectedPlan !== "free" && (
                 <div className="space-y-2">
-                  <Label htmlFor="phone">M-Pesa Phone Number</Label>
+                  <Label htmlFor="phone">Phone Number</Label>
                   <Input 
                     id="phone" 
                     type="tel" 
@@ -369,7 +357,7 @@ const RegistrationWithPayment = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="mpesa-phone">Confirm M-Pesa Number</Label>
+                  <Label htmlFor="mpesa-phone">Confirm Phone Number</Label>
                   <Input 
                     id="mpesa-phone" 
                     type="tel" 
@@ -394,7 +382,7 @@ const RegistrationWithPayment = () => {
                         Processing...
                       </>
                     ) : (
-                      "Subscribe with M-Pesa"
+                      "Subscribe Now"
                     )}
                   </Button>
                   
@@ -420,7 +408,7 @@ const RegistrationWithPayment = () => {
               </div>
             ) : (
               <div className="text-center py-4">
-                <h3 className="font-medium mb-2">M-Pesa payment initiated</h3>
+                <h3 className="font-medium mb-2">Payment initiated</h3>
                 {paymentStatus === "COMPLETED" ? (
                   <div className="bg-green-100 text-green-800 p-3 rounded-md">
                     Payment successful! Redirecting to dashboard...

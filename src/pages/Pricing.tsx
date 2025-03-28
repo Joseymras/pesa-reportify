@@ -14,7 +14,7 @@ const Pricing = () => {
       name: "Daily",
       price: 49,
       description: "Perfect for quick access",
-      buttonText: "Subscribe with M-Pesa",
+      buttonText: "Subscribe Now",
       features: [
         { name: "Unlimited reports for 24 hours", included: true },
         { name: "Basic templates", included: true },
@@ -30,7 +30,7 @@ const Pricing = () => {
       name: "Monthly",
       price: 299,
       description: "Most popular plan",
-      buttonText: "Subscribe with M-Pesa",
+      buttonText: "Subscribe Now",
       popular: true,
       features: [
         { name: "Unlimited reports", included: true },
@@ -47,7 +47,7 @@ const Pricing = () => {
       name: "Yearly",
       price: 2999,
       description: "Best value plan, save 16%",
-      buttonText: "Subscribe with M-Pesa",
+      buttonText: "Subscribe Now",
       features: [
         { name: "Unlimited reports", included: true },
         { name: "All templates", included: true },

@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import MainNav from "@/components/MainNav";
@@ -24,7 +23,6 @@ const Checkout = () => {
   const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
   const { user } = useAuth();
   
-  // Get plan details based on planId
   const getPlanDetails = () => {
     switch(planId) {
       case "premium":
@@ -40,7 +38,6 @@ const Checkout = () => {
   
   const planDetails = getPlanDetails();
 
-  // Set email from user if available
   useEffect(() => {
     if (user?.email) {
       setEmail(user.email);
@@ -50,12 +47,10 @@ const Checkout = () => {
   const formatPhoneNumber = (input: string): string => {
     let phone = input.replace(/\D/g, '');
     
-    // If starts with 0, replace with 254
     if (phone.startsWith('0')) {
       phone = '254' + phone.substring(1);
     }
     
-    // If doesn't start with 254, add it
     if (!phone.startsWith('254') && phone.length > 0) {
       phone = '254' + phone;
     }
@@ -63,22 +58,18 @@ const Checkout = () => {
     return phone;
   };
   
-  // Effect for checking payment status
   useEffect(() => {
     let intervalId: number | null = null;
     
     if (checkoutRequestId && !paymentStatus) {
-      // Check payment status every 5 seconds
       intervalId = window.setInterval(async () => {
         await verifyPaymentStatus();
       }, 5000);
     }
     
-    // If payment is successful, clear the interval
     if (paymentStatus === "COMPLETED") {
       if (intervalId) clearInterval(intervalId);
       
-      // Redirect to dashboard with success message
       toast.success("Payment successful! Redirecting to dashboard...");
       setTimeout(() => {
         navigate("/dashboard");
@@ -94,7 +85,7 @@ const Checkout = () => {
     const formattedPhone = formatPhoneNumber(phoneNumber);
     
     if (!formattedPhone || formattedPhone.length < 12) {
-      toast.error("Please enter a valid M-Pesa number");
+      toast.error("Please enter a valid phone number");
       return;
     }
     
@@ -155,13 +146,11 @@ const Checkout = () => {
       }
     } catch (error) {
       console.error("Verification error:", error);
-      // Don't show error toast for verification as it's a background process
     } finally {
       setIsVerifying(false);
     }
   };
 
-  // Calculate tax and total
   const vat = calculateFinancial('multiply', planDetails.price, 0.16);
   const total = calculateFinancial('add', planDetails.price, vat);
 
@@ -185,7 +174,7 @@ const Checkout = () => {
                 {!checkoutRequestId ? (
                   <>
                     <div className="mb-4">
-                      <p className="font-semibold mb-2">Enter your M-Pesa number</p>
+                      <p className="font-semibold mb-2">Enter your phone number</p>
                       <input 
                         type="tel" 
                         className="w-full p-2 border rounded-md" 
@@ -220,13 +209,13 @@ const Checkout = () => {
                           Processing...
                         </>
                       ) : (
-                        "Pay with M-Pesa"
+                        "Pay Now"
                       )}
                     </Button>
                   </>
                 ) : (
                   <div className="text-center py-4">
-                    <h3 className="font-medium mb-2">M-Pesa payment initiated</h3>
+                    <h3 className="font-medium mb-2">Payment initiated</h3>
                     {paymentStatus === "COMPLETED" ? (
                       <div className="bg-green-100 text-green-800 p-3 rounded-md">
                         Payment successful! Redirecting to dashboard...
