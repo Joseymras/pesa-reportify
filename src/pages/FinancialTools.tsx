@@ -195,7 +195,7 @@ const FinancialTools = () => {
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
                           <Label htmlFor="loanAmount">Loan Amount (KES)</Label>
-                          <span className="text-sm font-medium">{formatCurrency(loanAmount, 0)}</span>
+                          <span className="text-sm font-medium">Ksh {formatCurrency(loanAmount, 0)}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <Input
@@ -272,21 +272,21 @@ const FinancialTools = () => {
                       <div className="bg-green-50 p-4 rounded-lg">
                         <p className="text-sm text-green-600 font-medium">Monthly Payment</p>
                         <p className="text-2xl font-bold text-green-700">
-                          {formatCurrency(loanResult.monthlyPayment)}
+                          Ksh {formatCurrency(loanResult.monthlyPayment)}
                         </p>
                       </div>
                       
                       <div className="bg-gray-50 p-4 rounded-lg">
                         <p className="text-sm text-gray-600 font-medium">Total Cost</p>
                         <p className="text-2xl font-bold text-gray-700">
-                          {formatCurrency(loanResult.totalCost)}
+                          Ksh {formatCurrency(loanResult.totalCost)}
                         </p>
                       </div>
                       
                       <div className="bg-gray-50 p-4 rounded-lg">
                         <p className="text-sm text-gray-600 font-medium">Total Interest</p>
                         <p className="text-xl font-bold text-gray-700">
-                          {formatCurrency(loanResult.totalInterest)}
+                          Ksh {formatCurrency(loanResult.totalInterest)}
                         </p>
                       </div>
                       
@@ -294,7 +294,7 @@ const FinancialTools = () => {
                         <div className="bg-gray-50 p-4 rounded-lg">
                           <p className="text-sm text-gray-600 font-medium">Processing Fee</p>
                           <p className="text-xl font-bold text-gray-700">
-                            {formatCurrency(loanResult.processingFee)}
+                            Ksh {formatCurrency(loanResult.processingFee)}
                           </p>
                         </div>
                       )}
@@ -327,7 +327,7 @@ const FinancialTools = () => {
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
                             <Label htmlFor="initialDeposit">Initial Deposit (KES)</Label>
-                            <span className="text-sm font-medium">{formatCurrency(initialDeposit, 0)}</span>
+                            <span className="text-sm font-medium">Ksh {formatCurrency(initialDeposit, 0)}</span>
                           </div>
                           <Input
                             id="initialDeposit"
@@ -347,7 +347,7 @@ const FinancialTools = () => {
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
                             <Label htmlFor="monthlyContribution">Monthly Deposit (KES)</Label>
-                            <span className="text-sm font-medium">{formatCurrency(monthlyContribution, 0)}</span>
+                            <span className="text-sm font-medium">Ksh {formatCurrency(monthlyContribution, 0)}</span>
                           </div>
                           <Input
                             id="monthlyContribution"
@@ -414,21 +414,21 @@ const FinancialTools = () => {
                         <div className="bg-green-50 p-4 rounded-lg">
                           <p className="text-sm text-green-600 font-medium">Future Value</p>
                           <p className="text-2xl font-bold text-green-700">
-                            {formatCurrency(savingsResult.futureValue, 0)}
+                            Ksh {formatCurrency(savingsResult.futureValue, 0)}
                           </p>
                         </div>
                         
                         <div className="bg-gray-50 p-4 rounded-lg">
                           <p className="text-sm text-gray-600 font-medium">Total Contributions</p>
                           <p className="text-xl font-bold text-gray-700">
-                            {formatCurrency(savingsResult.totalContributions, 0)}
+                            Ksh {formatCurrency(savingsResult.totalContributions, 0)}
                           </p>
                         </div>
                         
                         <div className="bg-gray-50 p-4 rounded-lg">
                           <p className="text-sm text-gray-600 font-medium">Interest Earned</p>
                           <p className="text-xl font-bold text-gray-700">
-                            {formatCurrency(savingsResult.interestEarned, 0)}
+                            Ksh {formatCurrency(savingsResult.interestEarned, 0)}
                           </p>
                         </div>
                       </div>
@@ -474,7 +474,7 @@ const FinancialTools = () => {
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
                           <Label htmlFor="monthlyIncome">Monthly Income (After Tax)</Label>
-                          <span className="text-sm font-medium">{formatCurrency(monthlyIncome, 0)}</span>
+                          <span className="text-sm font-medium">Ksh {formatCurrency(monthlyIncome, 0)}</span>
                         </div>
                         <Input
                           id="monthlyIncome"
@@ -495,7 +495,7 @@ const FinancialTools = () => {
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
                             <Label htmlFor="essentialExpenses">Essential Expenses</Label>
-                            <span className="text-sm font-medium">{formatCurrency(essentialExpenses, 0)}</span>
+                            <span className="text-sm font-medium">Ksh {formatCurrency(essentialExpenses, 0)}</span>
                           </div>
                           <Input
                             id="essentialExpenses"
@@ -511,14 +511,14 @@ const FinancialTools = () => {
                             onValueChange={(value) => setEssentialExpenses(value[0])}
                           />
                           <p className="text-xs text-muted-foreground">
-                            Recommended: {formatCurrency(monthlyIncome * 0.5, 0)} (50% of income)
+                            Recommended: Ksh {formatCurrency(monthlyIncome * 0.5, 0)} (50% of income)
                           </p>
                         </div>
 
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
                             <Label htmlFor="savingsTarget">Savings Target</Label>
-                            <span className="text-sm font-medium">{formatCurrency(savingsTarget, 0)}</span>
+                            <span className="text-sm font-medium">Ksh {formatCurrency(savingsTarget, 0)}</span>
                           </div>
                           <Input
                             id="savingsTarget"
@@ -534,7 +534,7 @@ const FinancialTools = () => {
                             onValueChange={(value) => setSavingsTarget(value[0])}
                           />
                           <p className="text-xs text-muted-foreground">
-                            Recommended: {formatCurrency(monthlyIncome * 0.2, 0)} (20% of income)
+                            Recommended: Ksh {formatCurrency(monthlyIncome * 0.2, 0)} (20% of income)
                           </p>
                         </div>
                       </div>
@@ -547,11 +547,11 @@ const FinancialTools = () => {
                             Discretionary Spending
                           </p>
                           <p className={`text-2xl font-bold ${budgetResult.discretionarySpending >= 0 ? 'text-green-700' : 'text-red-700'}`}>
-                            {formatCurrency(Math.max(0, budgetResult.discretionarySpending), 0)}
+                            Ksh {formatCurrency(Math.max(0, budgetResult.discretionarySpending), 0)}
                           </p>
                           {budgetResult.discretionarySpending < 0 && (
                             <p className="text-xs text-red-600 mt-1">
-                              Budget deficit: {formatCurrency(Math.abs(budgetResult.discretionarySpending), 0)}
+                              Budget deficit: Ksh {formatCurrency(Math.abs(budgetResult.discretionarySpending), 0)}
                             </p>
                           )}
                         </div>
@@ -560,7 +560,7 @@ const FinancialTools = () => {
                           <div>
                             <p className="text-sm text-gray-600 font-medium">Essentials</p>
                             <p className="text-lg font-bold text-gray-700">
-                              {formatCurrency(essentialExpenses, 0)} 
+                              Ksh {formatCurrency(essentialExpenses, 0)} 
                               <span className="text-sm font-normal text-gray-500 ml-1">
                                 ({budgetResult.essentialPercent.toFixed(1)}%)
                               </span>
@@ -578,7 +578,7 @@ const FinancialTools = () => {
                           <div>
                             <p className="text-sm text-gray-600 font-medium">Savings</p>
                             <p className="text-lg font-bold text-gray-700">
-                              {formatCurrency(savingsTarget, 0)}
+                              Ksh {formatCurrency(savingsTarget, 0)}
                               <span className="text-sm font-normal text-gray-500 ml-1">
                                 ({budgetResult.savingsPercent.toFixed(1)}%)
                               </span>
@@ -599,7 +599,7 @@ const FinancialTools = () => {
                             <XAxis dataKey="name" />
                             <YAxis tickFormatter={(value) => `${value >= 1000 ? `${(value / 1000).toFixed(0)}K` : value}`} />
                             <RechartsTooltip 
-                              formatter={(value: any) => [`KES ${formatCurrency(Number(value), 0)}`, 'Amount']}
+                              formatter={(value: any) => [`Ksh ${formatCurrency(Number(value), 0)}`, 'Amount']}
                             />
                             <Bar dataKey="value" fill="#22c55e" />
                           </BarChart>
@@ -610,7 +610,7 @@ const FinancialTools = () => {
                         <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                           <p className="text-red-700 font-medium">Your budget is not balanced</p>
                           <p className="text-red-600 text-sm mt-1">
-                            Reduce your expenses or savings target by {formatCurrency(Math.abs(budgetResult.discretionarySpending), 0)} to balance your budget.
+                            Reduce your expenses or savings target by Ksh {formatCurrency(Math.abs(budgetResult.discretionarySpending), 0)} to balance your budget.
                           </p>
                         </div>
                       )}
