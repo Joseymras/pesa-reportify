@@ -70,16 +70,23 @@ export const fetchReferralRewards = async (): Promise<ReferralReward[]> => {
 };
 
 export const trackReferralClick = async (referralCode: string): Promise<boolean> => {
-  const { error } = await supabase.rpc("increment_referral_clicks", { 
-    code: referralCode 
-  });
+  // Fix: Using rpc call as a normal function call instead of a database function
+  const { error } = await supabase
+    .from("referrals")
+    .update({ clicks: supabase.sql`clicks + 1` })
+    .eq("referral_code", referralCode);
   
   return !error;
 };
 
 export const checkIsAdmin = async (): Promise<boolean> => {
+  // Fix: Getting the user ID first, then making the is_admin call
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) return false;
+  
   const { data, error } = await supabase.rpc("is_admin", { 
-    uid: supabase.auth.getUser().then(({ data }) => data?.user?.id) 
+    uid: user.id
   });
   
   if (error) {
