@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown, Calculator, DollarSign, PiggyBank, LineChart } from "lucide-react";
 import MpesaLogo from "./MpesaLogo";
 import { useAuth } from "@/context/AuthContext";
 import { 
@@ -83,9 +83,65 @@ const MainNav = () => {
               </NavigationMenuItem>
               
               <NavigationMenuItem>
-                <Link to="/financial-tools" className={`${navigationMenuTriggerStyle()} ${location.pathname === '/financial-tools' ? 'bg-accent/50' : ''}`}>
+                <NavigationMenuTrigger className={location.pathname.includes('/financial-tools') ? 'bg-accent/50' : ''}>
                   Financial Tools
-                </Link>
+                </NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  <ul className="grid w-[250px] gap-3 p-4">
+                    <li>
+                      <NavigationMenuLink asChild>
+                        <Link to="/financial-tools#loan" className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground">
+                          <div className="flex items-center gap-2">
+                            <Calculator className="h-4 w-4" />
+                            <div className="text-sm font-medium">Loan Calculator</div>
+                          </div>
+                          <p className="line-clamp-2 text-xs leading-snug text-muted-foreground">
+                            Calculate loan payments and interest
+                          </p>
+                        </Link>
+                      </NavigationMenuLink>
+                    </li>
+                    <li>
+                      <NavigationMenuLink asChild>
+                        <Link to="/financial-tools#savings" className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground">
+                          <div className="flex items-center gap-2">
+                            <PiggyBank className="h-4 w-4" />
+                            <div className="text-sm font-medium">Savings Calculator</div>
+                          </div>
+                          <p className="line-clamp-2 text-xs leading-snug text-muted-foreground">
+                            Plan your savings and investments
+                          </p>
+                        </Link>
+                      </NavigationMenuLink>
+                    </li>
+                    <li>
+                      <NavigationMenuLink asChild>
+                        <Link to="/financial-tools#budget" className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground">
+                          <div className="flex items-center gap-2">
+                            <DollarSign className="h-4 w-4" />
+                            <div className="text-sm font-medium">Budget Calculator</div>
+                          </div>
+                          <p className="line-clamp-2 text-xs leading-snug text-muted-foreground">
+                            Manage your personal budget
+                          </p>
+                        </Link>
+                      </NavigationMenuLink>
+                    </li>
+                    <li>
+                      <NavigationMenuLink asChild>
+                        <Link to="/financial-tools#currency" className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground">
+                          <div className="flex items-center gap-2">
+                            <LineChart className="h-4 w-4" />
+                            <div className="text-sm font-medium">Currency Converter</div>
+                          </div>
+                          <p className="line-clamp-2 text-xs leading-snug text-muted-foreground">
+                            Convert between different currencies
+                          </p>
+                        </Link>
+                      </NavigationMenuLink>
+                    </li>
+                  </ul>
+                </NavigationMenuContent>
               </NavigationMenuItem>
               
               {user && (
@@ -169,13 +225,58 @@ const MainNav = () => {
               >
                 Templates
               </Link>
-              <Link
-                to="/financial-tools"
-                className={`flex items-center gap-2 p-2 hover:bg-accent hover:text-accent-foreground rounded-md ${location.pathname === '/financial-tools' ? 'bg-accent/50' : ''}`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Financial Tools
-              </Link>
+              
+              {/* Financial Tools Dropdown for Mobile */}
+              <div className="relative">
+                <button
+                  className={`flex items-center justify-between w-full gap-2 p-2 hover:bg-accent hover:text-accent-foreground rounded-md ${location.pathname.includes('/financial-tools') ? 'bg-accent/50' : ''}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const dropdown = e.currentTarget.nextElementSibling;
+                    if (dropdown) {
+                      dropdown.classList.toggle('hidden');
+                    }
+                  }}
+                >
+                  <span>Financial Tools</span>
+                  <ChevronDown className="h-4 w-4" />
+                </button>
+                <div className="hidden pl-4 mt-1 space-y-1 border-l border-border/40">
+                  <Link
+                    to="/financial-tools#loan"
+                    className="flex items-center gap-2 p-2 hover:bg-accent hover:text-accent-foreground rounded-md"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Calculator className="h-4 w-4" />
+                    <span>Loan Calculator</span>
+                  </Link>
+                  <Link
+                    to="/financial-tools#savings"
+                    className="flex items-center gap-2 p-2 hover:bg-accent hover:text-accent-foreground rounded-md"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <PiggyBank className="h-4 w-4" />
+                    <span>Savings Calculator</span>
+                  </Link>
+                  <Link
+                    to="/financial-tools#budget"
+                    className="flex items-center gap-2 p-2 hover:bg-accent hover:text-accent-foreground rounded-md"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <DollarSign className="h-4 w-4" />
+                    <span>Budget Calculator</span>
+                  </Link>
+                  <Link
+                    to="/financial-tools#currency"
+                    className="flex items-center gap-2 p-2 hover:bg-accent hover:text-accent-foreground rounded-md"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <LineChart className="h-4 w-4" />
+                    <span>Currency Converter</span>
+                  </Link>
+                </div>
+              </div>
+              
               {user ? (
                 <>
                   <Link
