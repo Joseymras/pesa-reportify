@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import MpesaLogo from "./MpesaLogo";
 import { Facebook, Instagram, Twitter } from "lucide-react";
