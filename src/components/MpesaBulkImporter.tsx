@@ -58,10 +58,10 @@ export default function MpesaBulkImporter() {
             // Insert the transaction into the mpesa_transactions table
             const { error } = await supabase.from('mpesa_transactions').insert({
               user_id: userData.user.id,
-              transaction_id: transaction.transactionId || `TX${Date.now()}${Math.floor(Math.random() * 1000)}`,
+              transaction_id: transaction.id || `TX${Date.now()}${Math.floor(Math.random() * 1000)}`,
               transaction_type: transaction.type,
               amount: transaction.amount,
-              sender_receiver: transaction.senderReceiver,
+              sender_receiver: transaction.party,
               timestamp: transaction.date ? new Date(transaction.date).toISOString() : new Date().toISOString(),
               balance: transaction.balance,
               raw_message: message

@@ -10,7 +10,7 @@ import MpesaBulkImporter from "@/components/MpesaBulkImporter";
 import TemplateSelector from "@/components/TemplateSelector";
 import DashboardInsights from "@/components/DashboardInsights";
 import ReferralDashboard from "@/components/ReferralDashboard";
-import ReportDownloader from "@/components/ReportDownloader";
+import { ReportDownloader } from "@/components/ReportDownloader";
 import SavedReports from "@/components/SavedReports";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import CopyToClipboard from "@/components/CopyToClipboard";
@@ -38,7 +38,6 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Mock data for demonstration
     setIsWhatsAppLinked(true);
     setTotalIncome(50000);
     setTotalExpenses(20000);
@@ -168,7 +167,7 @@ const Dashboard = () => {
         </div>
 
         <div className="mt-8">
-          <Tabs defaultvalue="insights" className="w-full">
+          <Tabs defaultValue="insights" className="w-full">
             <TabsList>
               <TabsTrigger value="insights">Insights</TabsTrigger>
               <TabsTrigger value="bulk-import">Bulk Import</TabsTrigger>
@@ -190,7 +189,7 @@ const Dashboard = () => {
               <ReferralDashboard />
             </TabsContent>
             <TabsContent value="reports" className="mt-4">
-              <ReportDownloader />
+              <ReportDownloader type="budget" data={{}} />
               <SavedReports />
             </TabsContent>
             <TabsContent value="templates" className="mt-4">
