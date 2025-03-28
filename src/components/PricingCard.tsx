@@ -25,6 +25,17 @@ interface PricingCardProps {
 }
 
 const PricingCard: React.FC<PricingCardProps> = ({ plan }) => {
+  const getPlanPeriod = () => {
+    switch (plan.id) {
+      case 'daily':
+        return '/day';
+      case 'yearly':
+        return '/year';
+      default:
+        return '/month';
+    }
+  };
+
   return (
     <Card className={`flex flex-col h-full ${plan.popular ? 'border-green-500 shadow-lg relative' : ''}`}>
       {plan.popular && (
@@ -38,7 +49,7 @@ const PricingCard: React.FC<PricingCardProps> = ({ plan }) => {
       </CardHeader>
       <CardContent className="flex-grow">
         <div className="mb-4">
-          <p className="text-3xl font-bold">Ksh {plan.price.toLocaleString()}<span className="text-base font-normal text-muted-foreground">/month</span></p>
+          <p className="text-3xl font-bold">Ksh {plan.price.toLocaleString()}<span className="text-base font-normal text-muted-foreground">{getPlanPeriod()}</span></p>
         </div>
         <ul className="space-y-2 my-6">
           {plan.features.map((feature, index) => (

@@ -9,7 +9,7 @@ const corsHeaders = {
 const CHPTER_API_KEY = Deno.env.get("CHPTER_API_KEY");
 const CHPTER_API_URL = "https://api.chpter.co/v1";
 
-// Plan configurations
+// Plan configurations with updated pricing according to requirements
 const PLAN_CONFIGS = {
   daily: { name: "Daily Plan", price: 49, duration: "daily" },
   monthly: { name: "Monthly Plan", price: 299, duration: "monthly" },

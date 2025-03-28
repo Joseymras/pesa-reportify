@@ -1,31 +1,35 @@
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from 'react';
 
 interface GoogleAdProps {
   className?: string;
 }
 
-const GoogleAd = ({ className = "" }: GoogleAdProps) => {
-  // Use HTMLModElement which is the correct type for <ins> elements
-  const adRef = useRef<HTMLModElement>(null);
+const GoogleAd: React.FC<GoogleAdProps> = ({ className }) => {
+  const adRef = useRef<HTMLElement>(null);
 
+  // Initialize and render ad when component mounts
   useEffect(() => {
     try {
       const adsbygoogle = (window as any).adsbygoogle || [];
-      adsbygoogle.push({});
+      
+      if (adRef.current && adsbygoogle) {
+        adsbygoogle.push({});
+      }
     } catch (error) {
-      console.error("Error loading Google ad:", error);
+      console.error('Error loading Google ad:', error);
     }
   }, []);
 
   return (
-    <div className={`my-6 ${className}`}>
+    <div className={className || ''}>
+      {/* Google AdSense Ad */}
       <ins
         ref={adRef}
         className="adsbygoogle"
-        style={{ display: "block" }}
-        data-ad-client="ca-pub-2454303086985182"
-        data-ad-slot="7671202922"
+        style={{ display: 'block' }}
+        data-ad-client="ca-pub-placeholder" // Replace with actual ad client
+        data-ad-slot="placeholder" // Replace with actual ad slot
         data-ad-format="auto"
         data-full-width-responsive="true"
       />
