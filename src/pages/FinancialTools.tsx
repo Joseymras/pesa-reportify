@@ -57,7 +57,6 @@ const FinancialTools = () => {
     setTotalRepayment(totalRepayment);
     setTotalInterest(totalInterest);
 
-    // Update report data
     setReportData({
       loanAmount,
       interestRate,
@@ -79,7 +78,6 @@ const FinancialTools = () => {
         return;
       }
       
-      // Check if the user is logged in
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
       if (userError || !user) {
@@ -95,7 +93,7 @@ const FinancialTools = () => {
         user_id: user.id,
         name: reportName,
         type,
-        settings: reportData,
+        settings: JSON.stringify(reportData),
         include_personal_info: includePersonalInfo,
         created_at: new Date().toISOString()
       });
@@ -107,7 +105,6 @@ const FinancialTools = () => {
         description: "Your report has been saved successfully"
       });
       
-      // Reset form
       setReportName("");
       
     } catch (error) {
@@ -132,8 +129,6 @@ const FinancialTools = () => {
         <Tabs defaultValue="loan-calculator" className="w-full">
           <TabsList>
             <TabsTrigger value="loan-calculator" onClick={() => setType("loan-calculator")}>Loan Calculator</TabsTrigger>
-            {/* <TabsTrigger value="budget-planner">Budget Planner</TabsTrigger>
-            <TabsTrigger value="investment-calculator">Investment Calculator</TabsTrigger> */}
           </TabsList>
           <Separator className="my-4" />
           <TabsContent value="loan-calculator">
@@ -215,28 +210,6 @@ const FinancialTools = () => {
               </CardFooter>
             </Card>
           </TabsContent>
-          {/* <TabsContent value="budget-planner">
-            <Card className="w-full">
-              <CardHeader>
-                <CardTitle>Budget Planner</CardTitle>
-                <CardDescription>Plan and manage your budget effectively.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p>Coming Soon!</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          <TabsContent value="investment-calculator">
-            <Card className="w-full">
-              <CardHeader>
-                <CardTitle>Investment Calculator</CardTitle>
-                <CardDescription>Calculate your investment returns.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p>Coming Soon!</p>
-              </CardContent>
-            </Card>
-          </TabsContent> */}
         </Tabs>
       </main>
 

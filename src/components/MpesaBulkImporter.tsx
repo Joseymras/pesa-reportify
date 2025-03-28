@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,7 +29,6 @@ export default function MpesaBulkImporter() {
     let failed = 0;
     
     try {
-      // Split by common message separators
       const messageLines = messages
         .split(/\n{2,}|(?:----+)|(?:====+)/)
         .filter(msg => msg.trim())
@@ -48,20 +46,18 @@ export default function MpesaBulkImporter() {
         return;
       }
       
-      // Process each message
       for (const message of messageLines) {
         try {
           const parsedTransactions = parseTransactions(message);
           if (parsedTransactions.length > 0) {
             const transaction = parsedTransactions[0];
             
-            // Insert the transaction into the mpesa_transactions table
             const { error } = await supabase.from('mpesa_transactions').insert({
               user_id: userData.user.id,
               transaction_id: transaction.id || `TX${Date.now()}${Math.floor(Math.random() * 1000)}`,
               transaction_type: transaction.type,
               amount: transaction.amount,
-              sender_receiver: transaction.party,
+              sender_receiver: transaction.senderReceiver || transaction.party || '',
               timestamp: transaction.date ? new Date(transaction.date).toISOString() : new Date().toISOString(),
               balance: transaction.balance,
               raw_message: message
@@ -81,7 +77,6 @@ export default function MpesaBulkImporter() {
           failed++;
         }
         
-        // Update counts in real-time
         setProcessedCount(successful);
         setErrorCount(failed);
       }

@@ -174,3 +174,45 @@ export const calculateSavings = (
     interestEarned
   };
 };
+
+/**
+ * Converts an annual interest rate to a monthly rate
+ * @param annualRate - Annual interest rate as a percentage (e.g., 5 for 5%)
+ * @returns Monthly interest rate as a decimal
+ */
+export const convertToMonthlyRate = (annualRate: number): number => {
+  return annualRate / 100 / 12;
+};
+
+/**
+ * Calculates loan details including monthly payment, total repayment, and total interest
+ * @param principal - Loan amount
+ * @param monthlyRate - Monthly interest rate as a decimal
+ * @param termMonths - Loan term in months
+ * @returns Object with loan calculation details
+ */
+export const LoanCalculator = (
+  principal: number, 
+  monthlyRate: number, 
+  termMonths: number
+): { monthlyPayment: number; totalRepayment: number; totalInterest: number } => {
+  let monthlyPayment: number;
+  
+  if (monthlyRate === 0) {
+    // If interest rate is 0, simple division
+    monthlyPayment = principal / termMonths;
+  } else {
+    // Standard loan formula: P * r * (1+r)^n / ((1+r)^n - 1)
+    monthlyPayment = principal * monthlyRate * Math.pow(1 + monthlyRate, termMonths) / 
+      (Math.pow(1 + monthlyRate, termMonths) - 1);
+  }
+  
+  const totalRepayment = monthlyPayment * termMonths;
+  const totalInterest = totalRepayment - principal;
+  
+  return {
+    monthlyPayment,
+    totalRepayment,
+    totalInterest
+  };
+};
