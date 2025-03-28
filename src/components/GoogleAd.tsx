@@ -6,7 +6,8 @@ interface GoogleAdProps {
 }
 
 const GoogleAd = ({ className = "" }: GoogleAdProps) => {
-  const adRef = useRef<HTMLDivElement>(null);
+  // Use correct HTMLElement type for the ins element
+  const adRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     try {
