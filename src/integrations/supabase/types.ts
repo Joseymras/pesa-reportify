@@ -206,6 +206,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_preferences: {
+        Row: {
+          dashboard_layout: Json | null
+          id: string
+          last_updated: string | null
+          selected_template: string | null
+          theme: string | null
+          user_id: string
+        }
+        Insert: {
+          dashboard_layout?: Json | null
+          id?: string
+          last_updated?: string | null
+          selected_template?: string | null
+          theme?: string | null
+          user_id: string
+        }
+        Update: {
+          dashboard_layout?: Json | null
+          id?: string
+          last_updated?: string | null
+          selected_template?: string | null
+          theme?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

@@ -16,6 +16,15 @@ interface TemplatePreview {
   image: string;
 }
 
+interface UserPreference {
+  id: string;
+  user_id: string;
+  selected_template: string | null;
+  last_updated: string | null;
+  theme: string | null;
+  dashboard_layout: any | null;
+}
+
 const TEMPLATE_PREVIEWS: TemplatePreview[] = [
   {
     id: "chama-basic",
@@ -54,7 +63,7 @@ const TemplateSelector = () => {
       try {
         const { data, error } = await supabase
           .from('user_preferences')
-          .select('selected_template')
+          .select('*')
           .eq('user_id', user.id)
           .maybeSingle();
           
