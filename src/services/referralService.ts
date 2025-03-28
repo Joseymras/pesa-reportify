@@ -70,13 +70,25 @@ export const fetchReferralRewards = async (): Promise<ReferralReward[]> => {
 };
 
 export const trackReferralClick = async (referralCode: string): Promise<boolean> => {
-  // Fix: Using rpc call as a normal function call instead of a database function
-  const { error } = await supabase
+  // First, get the current referral to access its current click count
+  const { data: referral, error: fetchError } = await supabase
     .from("referrals")
-    .update({ clicks: supabase.sql`clicks + 1` })
+    .select("clicks")
+    .eq("referral_code", referralCode)
+    .single();
+  
+  if (fetchError) {
+    console.error("Error fetching referral for click tracking:", fetchError);
+    return false;
+  }
+  
+  // Now update with the incremented click count
+  const { error: updateError } = await supabase
+    .from("referrals")
+    .update({ clicks: (referral?.clicks || 0) + 1 })
     .eq("referral_code", referralCode);
   
-  return !error;
+  return !updateError;
 };
 
 export const checkIsAdmin = async (): Promise<boolean> => {
