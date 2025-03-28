@@ -22,7 +22,77 @@ serve(async (req) => {
   }
 
   try {
-    const { message, name, email, messageHistory, sendEmail } = await req.json();
+    const { message, name, email, messageHistory, sendEmail, templateId } = await req.json();
+
+    // Prepare template-specific information
+    let templateInfo = "";
+    if (templateId) {
+      switch(templateId) {
+        case "chama-basic":
+          templateInfo = `
+            Information about the Chama Basic template:
+            - Designed for tracking chama contributions
+            - Supports basic member management and contribution tracking
+            - Generates simple reports for chama members
+            - Can export data in basic formats
+            - Works with WhatsApp for sharing reports
+          `;
+          break;
+        case "chama-premium":
+          templateInfo = `
+            Information about the Chama Premium template:
+            - Advanced member management with detailed profiles
+            - Comprehensive statistics and financial reports
+            - Multi-group support for managing multiple chamas
+            - Automated reporting schedules
+            - Custom notification templates
+            - Advanced payment tracking and reminders
+          `;
+          break;
+        case "wedding-contribution":
+          templateInfo = `
+            Information about the Wedding Contribution template:
+            - Specialized for tracking wedding contributions
+            - Manages donor information and sends thank you messages
+            - Helps organize and track wedding budget
+            - Generates gift lists and manages RSVPs
+            - Creates beautiful reports for wedding planning
+          `;
+          break;
+        case "medical-fund":
+          templateInfo = `
+            Information about the Medical Fund template:
+            - Designed for medical fundraising campaigns
+            - Tracks donor information with details
+            - Generates progress reports for the fundraising goal
+            - Manages medical expense categories
+            - Provides transparent reporting for accountability
+          `;
+          break;
+        case "church-tithe":
+          templateInfo = `
+            Information about the Church Tithe template:
+            - Specialized for tracking church tithes and offerings
+            - Categorizes different types of church contributions
+            - Generates reports for church leadership
+            - Tracks member contribution history
+            - Exports data for church accounting
+          `;
+          break;
+        case "daily-merry-go-round":
+          templateInfo = `
+            Information about the Daily Merry-Go-Round template:
+            - Designed for daily contribution rotation groups
+            - Automatically schedules rotation and payouts
+            - Tracks daily contributions with precision
+            - Sends reminders for payments
+            - Generates reports for accountability
+          `;
+          break;
+        default:
+          templateInfo = "No specific template information available.";
+      }
+    }
 
     // Process the message with OpenAI to get Lizz's response
     const response = await openai.chat.completions.create({
@@ -38,6 +108,8 @@ serve(async (req) => {
           3. WhatsApp group integration: linking groups, sending reports
           4. Templates available: Chama Contribution, Wedding Fundraiser, Daily Challenge, Medical Fund
           5. Pricing plans: free tier and premium features
+          
+          ${templateInfo ? `\nSpecific template information:\n${templateInfo}` : ''}
           
           Keep responses concise but helpful. If you don't know the answer, suggest contacting support at info@pesalytics.co.ke.
           Always maintain a professional, friendly tone.`

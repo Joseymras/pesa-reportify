@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Search, Filter, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
 import BackNavigationButton from "@/components/BackNavigationButton";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface Template {
   id: string;
@@ -72,6 +73,7 @@ const TEMPLATES: Template[] = [
 const Templates = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
   
   const categories = Array.from(new Set(TEMPLATES.map(t => t.category)));
   
@@ -81,6 +83,10 @@ const Templates = () => {
     const matchesCategory = selectedCategory ? template.category === selectedCategory : true;
     return matchesSearch && matchesCategory;
   });
+  
+  const handlePreview = (template: Template) => {
+    setPreviewTemplate(template);
+  };
   
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-green-50 to-white">
@@ -103,7 +109,7 @@ const Templates = () => {
             />
           </div>
           
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               variant={selectedCategory === null ? "default" : "outline"}
               size="sm"
@@ -154,7 +160,11 @@ const Templates = () => {
                 <CardDescription>{template.description}</CardDescription>
               </CardHeader>
               <CardFooter className="flex justify-between">
-                <Button variant="outline" size="sm">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => handlePreview(template)}
+                >
                   <FileText className="h-4 w-4 mr-2" />
                   Preview
                 </Button>
@@ -174,6 +184,47 @@ const Templates = () => {
             <p className="text-muted-foreground">Try adjusting your search or filters</p>
           </div>
         )}
+        
+        <Dialog open={!!previewTemplate} onOpenChange={(open) => !open && setPreviewTemplate(null)}>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center justify-between">
+                <span>{previewTemplate?.name}</span>
+                {previewTemplate?.premium && (
+                  <span className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800">
+                    Premium
+                  </span>
+                )}
+              </DialogTitle>
+              <DialogDescription>{previewTemplate?.description}</DialogDescription>
+            </DialogHeader>
+            
+            <div className="mt-4">
+              <img 
+                src={previewTemplate?.previewImage} 
+                alt={previewTemplate?.name} 
+                className="w-full h-auto rounded-md"
+              />
+            </div>
+            
+            <div className="mt-4 flex justify-end space-x-2">
+              <Button 
+                variant="outline" 
+                onClick={() => setPreviewTemplate(null)}
+              >
+                Close
+              </Button>
+              <Button 
+                asChild
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <Link to={`/templates/${previewTemplate?.id}`}>
+                  Use Template
+                </Link>
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </main>
       
       <Footer />

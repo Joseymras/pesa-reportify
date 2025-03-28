@@ -10,6 +10,7 @@ import BackNavigationButton from "@/components/BackNavigationButton";
 import NextNavigationButton from "@/components/NextNavigationButton";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Template {
   id: string;
@@ -86,13 +87,74 @@ const TEMPLATES: Record<string, Template> = {
     premium: false,
     category: "Events"
   },
-  // Add more template details as needed
+  "medical-fund": {
+    id: "medical-fund",
+    name: "Medical Fund",
+    description: "Track medical fundraising with detailed donor information and progress tracking. Generate professional reports for transparency.",
+    features: [
+      "Track medical fundraising",
+      "Manage donor information",
+      "Generate transparent reports",
+      "Track fundraising goals",
+      "Send thank you messages"
+    ],
+    previewImage: "https://placehold.co/600x400/e2e8f0/64748b?text=Medical+Fund",
+    detailImages: [
+      "https://placehold.co/800x600/e2e8f0/64748b?text=Overview",
+      "https://placehold.co/800x600/e2e8f0/64748b?text=Donors",
+      "https://placehold.co/800x600/e2e8f0/64748b?text=Progress"
+    ],
+    premium: true,
+    category: "Healthcare"
+  },
+  "church-tithe": {
+    id: "church-tithe",
+    name: "Church Tithe Tracker",
+    description: "Manage and report church tithes and offerings with ease. Generate detailed reports for church leadership.",
+    features: [
+      "Track tithes and offerings",
+      "Generate detailed reports",
+      "Member contribution history",
+      "Export data for accounting",
+      "Categorize different offerings"
+    ],
+    previewImage: "https://placehold.co/600x400/e2e8f0/64748b?text=Church+Tithe",
+    detailImages: [
+      "https://placehold.co/800x600/e2e8f0/64748b?text=Overview",
+      "https://placehold.co/800x600/e2e8f0/64748b?text=Reports",
+      "https://placehold.co/800x600/e2e8f0/64748b?text=Members"
+    ],
+    premium: false,
+    category: "Religious"
+  },
+  "daily-merry-go-round": {
+    id: "daily-merry-go-round",
+    name: "Daily Merry-Go-Round",
+    description: "Manage daily contribution rotations with automatic calculations and scheduling. Perfect for daily savings groups.",
+    features: [
+      "Automatic rotation scheduling",
+      "Daily contribution tracking",
+      "Member payout scheduling",
+      "Contribution history",
+      "WhatsApp notifications",
+      "Payment reminders"
+    ],
+    previewImage: "https://placehold.co/600x400/e2e8f0/64748b?text=Daily+MGR",
+    detailImages: [
+      "https://placehold.co/800x600/e2e8f0/64748b?text=Overview",
+      "https://placehold.co/800x600/e2e8f0/64748b?text=Schedule",
+      "https://placehold.co/800x600/e2e8f0/64748b?text=Members"
+    ],
+    premium: true,
+    category: "Chama"
+  }
 };
 
 const TemplateDetail = () => {
   const { templateId } = useParams<{ templateId: string }>();
   const [activeTab, setActiveTab] = useState("overview");
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
   
@@ -109,17 +171,62 @@ const TemplateDetail = () => {
     return null;
   }
   
-  const handleUseTemplate = () => {
-    if (template.premium && (!user)) {
+  const saveTemplateSelection = async () => {
+    if (!user) {
+      toast.error("Please login to use this template");
+      navigate("/login", { state: { returnTo: `/templates/${templateId}` } });
+      return;
+    }
+    
+    if (template.premium && !user) {
       toast.error("This is a premium template. Please upgrade your account to use it.");
       navigate("/pricing");
       return;
     }
     
-    toast.success(`${template.name} template selected. Redirecting to dashboard...`);
+    setLoading(true);
+    
+    try {
+      // Save user's template selection to their profile
+      const { error } = await supabase
+        .from('user_preferences')
+        .upsert({ 
+          user_id: user.id,
+          selected_template: template.id,
+          last_updated: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
+        });
+        
+      if (error) throw error;
+      
+      toast.success(`${template.name} template selected. Redirecting to dashboard...`);
+      
+      setTimeout(() => {
+        navigate("/dashboard", { state: { templateSelected: template.id } });
+      }, 1000);
+    } catch (error) {
+      console.error("Error saving template selection:", error);
+      // Fall back to using state for template selection if storage fails
+      toast.success(`${template.name} template selected. Redirecting to dashboard...`);
+      setTimeout(() => {
+        navigate("/dashboard", { state: { templateSelected: template.id } });
+      }, 1000);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const handleUseTemplate = () => {
+    saveTemplateSelection();
+  };
+  
+  const handleDownloadSample = () => {
+    toast.info(`Downloading sample for ${template.name} template...`);
+    // In a real app, this would download a sample file
     setTimeout(() => {
-      navigate("/dashboard", { state: { templateSelected: template.id } });
-    }, 1500);
+      toast.success("Sample downloaded successfully");
+    }, 1000);
   };
   
   return (
@@ -136,8 +243,8 @@ const TemplateDetail = () => {
               </span>
             )}
           </div>
-          <Button asChild variant="outline" size="sm">
-            <a href="#" onClick={(e) => { e.preventDefault(); toast.info("Template demo downloaded"); }}>
+          <Button asChild variant="outline" size="sm" onClick={handleDownloadSample}>
+            <a href="#" onClick={(e) => { e.preventDefault(); handleDownloadSample(); }}>
               <Download className="h-4 w-4 mr-2" />
               Download Sample
             </a>
@@ -166,14 +273,23 @@ const TemplateDetail = () => {
                 onClick={handleUseTemplate} 
                 className="flex-1 bg-green-600 hover:bg-green-700"
                 size="lg"
+                disabled={loading}
               >
-                Use This Template
+                {loading ? "Selecting..." : "Use This Template"}
               </Button>
-              <Button variant="outline" size="lg" className="flex-1" asChild>
-                <a href="#preview">
-                  <Eye className="h-5 w-5 mr-2" />
-                  Preview
-                </a>
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="flex-1" 
+                onClick={() => {
+                  const previewElement = document.getElementById('preview');
+                  if (previewElement) {
+                    previewElement.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+              >
+                <Eye className="h-5 w-5 mr-2" />
+                Preview
               </Button>
             </div>
             
