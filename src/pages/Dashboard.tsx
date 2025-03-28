@@ -16,6 +16,8 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import CopyToClipboard from "@/components/CopyToClipboard";
 import { useNavigate, Link } from "react-router-dom";
 import { calculateTotal, formatCurrency } from "@/utils/calculationUtils";
+import { AdminChat } from "@/components/AdminChat";
+import { supabase } from "@/integrations/supabase/client";
 
 const Dashboard = () => {
   const [isWhatsAppLinked, setIsWhatsAppLinked] = useState(false);
@@ -35,7 +37,9 @@ const Dashboard = () => {
     { name: 'Jun', income: 0, expense: 0 },
   ]);
   const [showChat, setShowChat] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
+  const user = supabase.auth.user();
 
   useEffect(() => {
     setIsWhatsAppLinked(true);
@@ -54,6 +58,24 @@ const Dashboard = () => {
       { name: 'May', income: 9000, expense: 2000 },
       { name: 'Jun', income: 10000, expense: 5000 },
     ]);
+
+    // Check if current user is admin
+    const checkAdminStatus = async () => {
+      try {
+        const { data, error } = await supabase.rpc('is_admin', { 
+          uid: user?.id 
+        });
+        
+        if (error) throw error;
+        setIsAdmin(data || false);
+      } catch (error) {
+        console.error("Error checking admin status:", error);
+      }
+    };
+    
+    if (user) {
+      checkAdminStatus();
+    }
   }, []);
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
@@ -82,6 +104,14 @@ const Dashboard = () => {
             Get Started with Templates
           </Button>
         </div>
+
+        {/* Admin section */}
+        {isAdmin && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-4">Admin Controls</h2>
+            <AdminChat />
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card className="bg-white shadow-sm">
