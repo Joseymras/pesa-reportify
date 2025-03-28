@@ -208,7 +208,7 @@ const RegistrationWithPayment = () => {
 
   return (
     <>
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md shadow-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">
             {paymentStep ? "Complete Payment" : "Create an Account"}
@@ -394,7 +394,7 @@ const RegistrationWithPayment = () => {
                         Processing...
                       </>
                     ) : (
-                      "Pay with M-Pesa"
+                      "Subscribe with M-Pesa"
                     )}
                   </Button>
                   

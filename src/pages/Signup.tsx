@@ -10,7 +10,7 @@ const Signup = () => {
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-green-50 to-white">
       <MainNav />
       
-      <div className="flex flex-1 flex-col items-center justify-center p-4">
+      <div className="flex flex-1 flex-col items-center justify-center p-4 pt-20 pb-12">
         <div className="mb-6 flex items-center gap-2">
           <MpesaLogo className="h-8 w-8" />
           <h1 className="text-2xl font-bold">
