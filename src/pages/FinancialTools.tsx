@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { useState } from "react";
 import Footer from "@/components/Footer";
 import MainNav from "@/components/MainNav";
-import { calculateLoanPayment, calculateSavings, formatCurrency } from "@/utils/calculationUtils";
+import { calculateFinancial, formatCurrency } from "@/utils/calculationUtils";
 import { CreditCard, PiggyBank, Wallet, DollarSign, LineChart } from "lucide-react";
 import { 
   ResponsiveContainer, 
@@ -147,13 +148,9 @@ const FinancialTools = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
-      <header className="bg-white border-b">
-        <div className="container mx-auto py-4">
-          <MainNav />
-        </div>
-      </header>
+      <MainNav />
 
-      <main className="flex-1">
+      <main className="flex-1 pt-20">
         <div className="container mx-auto py-8">
           <div className="max-w-3xl mx-auto">
             <h1 className="text-3xl font-bold text-center mb-2">Financial Tools</h1>

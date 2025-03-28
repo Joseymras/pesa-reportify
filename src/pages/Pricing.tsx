@@ -65,7 +65,7 @@ const Pricing = () => {
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-green-50 to-white">
       <MainNav />
       
-      <main className="flex-grow container mx-auto px-4 py-12">
+      <main className="flex-grow container mx-auto px-4 py-12 pt-24">
         <div className="text-center mb-12">
           <h1 className="text-3xl md:text-4xl font-bold mb-4">Choose the Right Plan for You</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -88,6 +88,12 @@ const Pricing = () => {
           </p>
           <Link to="/contact" className="inline-flex items-center text-green-600 font-medium hover:text-green-700">
             Contact our team <MoveRight className="ml-2 h-4 w-4" />
+          </Link>
+        </div>
+
+        <div className="mt-12 text-center">
+          <Link to="/financial-tools" className="inline-flex items-center text-green-600 font-medium hover:text-green-700">
+            Try our financial tools <MoveRight className="ml-2 h-4 w-4" />
           </Link>
         </div>
 

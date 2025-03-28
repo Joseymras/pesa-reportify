@@ -82,6 +82,12 @@ const MainNav = () => {
                 </Link>
               </NavigationMenuItem>
               
+              <NavigationMenuItem>
+                <Link to="/financial-tools" className={`${navigationMenuTriggerStyle()} ${location.pathname === '/financial-tools' ? 'bg-accent/50' : ''}`}>
+                  Financial Tools
+                </Link>
+              </NavigationMenuItem>
+              
               {user && (
                 <NavigationMenuItem>
                   <NavigationMenuTrigger>Account</NavigationMenuTrigger>
@@ -162,6 +168,13 @@ const MainNav = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Templates
+              </Link>
+              <Link
+                to="/financial-tools"
+                className={`flex items-center gap-2 p-2 hover:bg-accent hover:text-accent-foreground rounded-md ${location.pathname === '/financial-tools' ? 'bg-accent/50' : ''}`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Financial Tools
               </Link>
               {user ? (
                 <>

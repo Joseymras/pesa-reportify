@@ -158,7 +158,7 @@ const Checkout = () => {
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-green-50 to-white">
       <MainNav />
       
-      <main className="container mx-auto px-4 py-8 flex-grow">
+      <main className="container mx-auto px-4 py-8 flex-grow pt-24">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-3xl font-bold">Checkout</h1>
           <BackNavigationButton to="/pricing" label="Back to Pricing" />
