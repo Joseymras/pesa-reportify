@@ -6,7 +6,8 @@ interface GoogleAdProps {
 }
 
 const GoogleAd: React.FC<GoogleAdProps> = ({ className }) => {
-  const adRef = useRef<HTMLElement>(null);
+  // Update ref type to HTMLModElement which is the correct type for <ins> elements
+  const adRef = useRef<HTMLModElement>(null);
 
   // Initialize and render ad when component mounts
   useEffect(() => {
