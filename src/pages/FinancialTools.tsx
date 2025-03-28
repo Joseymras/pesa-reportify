@@ -1,14 +1,24 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import { useState } from "react";
 import Footer from "@/components/Footer";
 import MainNav from "@/components/MainNav";
 import { calculateLoanPayment, calculateSavings, formatCurrency } from "@/utils/calculationUtils";
+import { CreditCard, PiggyBank, Wallet, DollarSign, LineChart } from "lucide-react";
+import { 
+  ResponsiveContainer, 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  Tooltip as RechartsTooltip
+} from "recharts";
 
 const FinancialTools = () => {
   // Loan Calculator State
@@ -431,9 +441,9 @@ const FinancialTools = () => {
                           <BarChart data={savingsProjectionData}>
                             <XAxis dataKey="year" label={{ value: 'Years', position: 'bottom' }} />
                             <YAxis tickFormatter={(value) => `${value >= 1000 ? `${(value / 1000).toFixed(0)}K` : value}`} />
-                            <Tooltip 
-                              formatter={(value) => [`KES ${formatCurrency(Number(value), 0)}`, 'Value']}
-                              labelFormatter={(value) => `Year ${value}`}
+                            <RechartsTooltip 
+                              formatter={(value: any) => [`KES ${formatCurrency(Number(value), 0)}`, 'Value']}
+                              labelFormatter={(value: any) => `Year ${value}`}
                             />
                             <Bar dataKey="value" name="Value" fill="#22c55e" />
                           </BarChart>
@@ -591,8 +601,8 @@ const FinancialTools = () => {
                           <BarChart data={budgetData}>
                             <XAxis dataKey="name" />
                             <YAxis tickFormatter={(value) => `${value >= 1000 ? `${(value / 1000).toFixed(0)}K` : value}`} />
-                            <Tooltip 
-                              formatter={(value) => [`KES ${formatCurrency(Number(value), 0)}`, 'Amount']}
+                            <RechartsTooltip 
+                              formatter={(value: any) => [`KES ${formatCurrency(Number(value), 0)}`, 'Amount']}
                             />
                             <Bar dataKey="value" fill="#22c55e" />
                           </BarChart>

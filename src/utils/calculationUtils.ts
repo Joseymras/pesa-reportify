@@ -1,3 +1,4 @@
+
 /**
  * Utility functions for accurate financial calculations
  */
@@ -93,4 +94,83 @@ export const calculateFinancial = (
     default:
       return 0;
   }
+};
+
+/**
+ * Calculates loan payment details
+ * @param loanAmount - Principal loan amount
+ * @param interestRate - Annual interest rate (percentage)
+ * @param loanTermMonths - Loan term in months
+ * @param includeProcessingFee - Whether to include processing fee
+ * @returns Object with payment details
+ */
+export const calculateLoanPayment = (
+  loanAmount: number,
+  interestRate: number,
+  loanTermMonths: number,
+  includeProcessingFee: boolean = false
+) => {
+  const monthlyRate = interestRate / 100 / 12;
+  const totalPayments = loanTermMonths;
+  
+  // Calculate base monthly payment using the formula: P * r * (1+r)^n / ((1+r)^n - 1)
+  let monthlyPayment = 0;
+  if (monthlyRate) {
+    monthlyPayment = loanAmount * monthlyRate * Math.pow(1 + monthlyRate, totalPayments) / 
+      (Math.pow(1 + monthlyRate, totalPayments) - 1);
+  } else {
+    monthlyPayment = loanAmount / totalPayments;
+  }
+  
+  // Calculate total repayment
+  const totalRepayment = monthlyPayment * totalPayments;
+  
+  // Add processing fee if selected (typically 2.5%)
+  const fee = includeProcessingFee ? loanAmount * 0.025 : 0;
+  const totalCost = totalRepayment + fee;
+  const totalInterest = totalRepayment - loanAmount;
+  
+  return {
+    monthlyPayment,
+    totalRepayment,
+    totalInterest,
+    processingFee: fee,
+    totalCost
+  };
+};
+
+/**
+ * Calculates compound savings over time
+ * @param initialDeposit - Starting deposit amount
+ * @param monthlyContribution - Monthly contribution amount
+ * @param savingsYears - Years to save
+ * @param interestRate - Annual interest rate (percentage)
+ * @returns Object with savings details
+ */
+export const calculateSavings = (
+  initialDeposit: number,
+  monthlyContribution: number,
+  savingsYears: number,
+  interestRate: number
+) => {
+  const monthlyRate = interestRate / 100 / 12;
+  const totalMonths = savingsYears * 12;
+  
+  let futureValue = initialDeposit * Math.pow(1 + monthlyRate, totalMonths);
+  
+  // Calculate future value of monthly contributions
+  if (monthlyRate > 0) {
+    futureValue += monthlyContribution * ((Math.pow(1 + monthlyRate, totalMonths) - 1) / monthlyRate);
+  } else {
+    futureValue += monthlyContribution * totalMonths;
+  }
+  
+  const totalContributions = initialDeposit + (monthlyContribution * totalMonths);
+  const interestEarned = futureValue - totalContributions;
+  
+  return {
+    futureValue,
+    totalContributions,
+    interestEarned
+  };
 };
