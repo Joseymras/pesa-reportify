@@ -1,18 +1,14 @@
-
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
-import { Calculator, Calendar, CreditCard, DollarSign, LineChart, PiggyBank, Wallet } from "lucide-react";
-import { MainNav } from "@/components/MainNav";
+import { useState } from "react";
 import Footer from "@/components/Footer";
-import { formatCurrency, calculateFinancial } from "@/utils/calculationUtils";
-import { ChartContainer } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import MainNav from "@/components/MainNav";
+import { calculateLoanPayment, calculateSavings, formatCurrency } from "@/utils/calculationUtils";
 
 const FinancialTools = () => {
   // Loan Calculator State

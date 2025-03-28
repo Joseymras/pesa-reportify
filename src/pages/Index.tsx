@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, BarChart4, FileText, MessageSquare, Share2, Users } from "lucide-react";
@@ -6,6 +5,8 @@ import { Link } from "react-router-dom";
 import MpesaLogo from "@/components/MpesaLogo";
 import MainNav from "@/components/MainNav";
 import Footer from "@/components/Footer";
+import Testimonials from "@/components/Testimonials";
+import NewsletterSignup from "@/components/NewsletterSignup";
 
 const Index = () => {
   return (
@@ -115,6 +116,9 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Testimonials Section */}
+      <Testimonials />
+
       {/* WhatsApp Integration Section */}
       <section className="container mx-auto px-4 py-16">
         <div className="flex flex-col md:flex-row items-center gap-8">
@@ -161,6 +165,15 @@ const Index = () => {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Newsletter Signup */}
+      <section className="container mx-auto px-4 py-16 text-center">
+        <div className="max-w-xl mx-auto">
+          <h2 className="mb-4 text-2xl md:text-3xl font-bold">Stay Updated</h2>
+          <p className="mb-6 text-muted-foreground">Subscribe to our newsletter for the latest updates and financial tips.</p>
+          <NewsletterSignup />
         </div>
       </section>
 

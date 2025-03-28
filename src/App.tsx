@@ -18,11 +18,17 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 import { useEffect } from "react";
 import ChatDrawer from "./components/ChatDrawer";
+import InstallPrompt from "./components/InstallPrompt";
+import FinancialTools from "./pages/FinancialTools";
+import { registerServiceWorker } from "./ServiceWorkerRegistration";
 
 const queryClient = new QueryClient();
 
 const App = () => {
   useEffect(() => {
+    // Register service worker for offline support
+    registerServiceWorker();
+    
     // Load Google Ads script
     const script = document.createElement("script");
     script.src = "/google-ads.js";
@@ -48,6 +54,7 @@ const App = () => {
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/demo" element={<Demo />} />
+              <Route path="/financial-tools" element={<FinancialTools />} />
               <Route 
                 path="/dashboard" 
                 element={
@@ -71,6 +78,7 @@ const App = () => {
               <Route path="*" element={<NotFound />} />
             </Routes>
             <ChatDrawer />
+            <InstallPrompt />
             {/* Keep TawkChat for now as a backup until the new chatbot is fully tested */}
             <TawkChat 
               propertyId="64f5d9a0a0c3e16c4b5c7c90" 

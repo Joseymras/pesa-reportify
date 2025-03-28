@@ -1,4 +1,8 @@
 
 project_id = "supabase"
+
 [functions.ai-assistant]
+verify_jwt = false
+
+[functions.newsletter-signup]
 verify_jwt = false
