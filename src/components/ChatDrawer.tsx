@@ -8,7 +8,7 @@ import {
   DrawerTitle,
   DrawerClose
 } from "./ui/drawer";
-import { MessageCircle, X, Bell } from "lucide-react";
+import { MessageCircle, X } from "lucide-react";
 import ChatInterface from "./ChatInterface";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";

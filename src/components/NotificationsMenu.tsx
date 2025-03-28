@@ -14,8 +14,17 @@ import { useAuth } from "@/context/AuthContext";
 import { useToast } from "./ui/use-toast";
 import { useNavigate } from "react-router-dom";
 
+interface Notification {
+  id: string;
+  title: string | null;
+  content: string;
+  type: string;
+  is_read: boolean;
+  created_at: string;
+}
+
 export function NotificationsMenu() {
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -89,7 +98,7 @@ export function NotificationsMenu() {
     }
   };
 
-  const handleNotificationClick = async (notification: any) => {
+  const handleNotificationClick = async (notification: Notification) => {
     // Mark as read
     await markAsRead(notification.id);
     

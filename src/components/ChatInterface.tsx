@@ -13,6 +13,22 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
+interface Profile {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+}
+
+interface ChatMessage {
+  id: string;
+  content: string;
+  sender_type: "assistant" | "user" | "admin";
+  created_at: string;
+  user_id: string | null;
+  recipient_id: string | null;
+}
+
 type Message = {
   role: "assistant" | "user" | "admin";
   content: string;
@@ -40,7 +56,7 @@ export default function ChatInterface({ isAdmin = false, selectedUserId, onUserS
   const [isLoading, setIsLoading] = useState(false);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [isContactVisible, setIsContactVisible] = useState(false);
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<Profile[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -89,7 +105,7 @@ export default function ChatInterface({ isAdmin = false, selectedUserId, onUserS
       if (error) throw error;
       
       if (data && data.length > 0) {
-        const formattedMessages = data.map(msg => ({
+        const formattedMessages: Message[] = (data as ChatMessage[]).map(msg => ({
           role: msg.sender_type as "assistant" | "user" | "admin",
           content: msg.content,
           timestamp: new Date(msg.created_at),
