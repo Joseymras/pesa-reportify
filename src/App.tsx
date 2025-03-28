@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,6 +17,7 @@ import TemplateDetail from "./pages/TemplateDetail";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 import { useEffect } from "react";
+import ChatDrawer from "./components/ChatDrawer";
 
 const queryClient = new QueryClient();
 
@@ -70,6 +70,8 @@ const App = () => {
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <ChatDrawer />
+            {/* Keep TawkChat for now as a backup until the new chatbot is fully tested */}
             <TawkChat 
               propertyId="64f5d9a0a0c3e16c4b5c7c90" 
               widgetId="1h1etbqvd" 
