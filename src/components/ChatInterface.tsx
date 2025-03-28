@@ -9,7 +9,7 @@ import { Label } from "./ui/label";
 import { Send, User, Bot } from "lucide-react";
 import { Checkbox } from "./ui/checkbox";
 import { useToast } from "./ui/use-toast";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
 
 type Message = {
   role: "assistant" | "user";
@@ -33,11 +33,6 @@ export default function ChatInterface() {
   const [isContactVisible, setIsContactVisible] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-
-  const supabase = createClient(
-    import.meta.env.VITE_SUPABASE_URL || '',
-    import.meta.env.VITE_SUPABASE_ANON_KEY || ''
-  );
 
   useEffect(() => {
     scrollToBottom();
