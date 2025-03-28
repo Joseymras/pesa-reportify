@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,17 +10,25 @@ import { useState } from "react";
 import Footer from "@/components/Footer";
 import MainNav from "@/components/MainNav";
 import { calculateFinancial, formatCurrency } from "@/utils/calculationUtils";
-import { CreditCard, PiggyBank, Wallet, DollarSign, LineChart } from "lucide-react";
+import { CreditCard, PiggyBank, Wallet, DollarSign, LineChart, ArrowRight } from "lucide-react";
 import { 
   ResponsiveContainer, 
   BarChart, 
   Bar, 
+  LineChart as RechartsLineChart,
+  Line,
   XAxis, 
   YAxis, 
   Tooltip as RechartsTooltip
 } from "recharts";
+import { ReportDownloader } from "@/components/ReportDownloader";
+import { useCurrencyConverter, CurrencyCode } from "@/hooks/useCurrencyConverter";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 const FinancialTools = () => {
+  const { toast } = useToast();
+  
   // Loan Calculator State
   const [loanAmount, setLoanAmount] = useState<number>(100000);
   const [loanTermMonths, setLoanTermMonths] = useState<number>(12);
@@ -38,6 +45,19 @@ const FinancialTools = () => {
   const [monthlyIncome, setMonthlyIncome] = useState<number>(50000);
   const [essentialExpenses, setEssentialExpenses] = useState<number>(20000);
   const [savingsTarget, setSavingsTarget] = useState<number>(10000);
+
+  // Currency converter hook
+  const { 
+    amount, 
+    setAmount, 
+    fromCurrency, 
+    setFromCurrency, 
+    toCurrency, 
+    setToCurrency, 
+    convertedAmount, 
+    currencies,
+    historicalData 
+  } = useCurrencyConverter();
   
   // Calculate loan payment
   const calculateLoanPayment = () => {
@@ -145,6 +165,45 @@ const FinancialTools = () => {
       value: Math.round(value)
     };
   });
+
+  // Handle report saving to user account
+  const saveReport = async (reportName: string, includePersonalInfo: boolean, type: 'loan' | 'savings' | 'budget' | 'currency', data: Record<string, any>) => {
+    try {
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !userData.user) {
+        toast({
+          title: "Not logged in",
+          description: "Please log in to save reports to your account",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      const { error } = await supabase.from('saved_reports').insert({
+        user_id: userData.user.id,
+        name: reportName,
+        type,
+        data,
+        include_personal_info: includePersonalInfo,
+        created_at: new Date().toISOString()
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Report Saved",
+        description: "Your report has been saved to your account"
+      });
+    } catch (error) {
+      console.error("Error saving report:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save report. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -304,7 +363,25 @@ const FinancialTools = () => {
                     <p className="text-sm text-muted-foreground">
                       Rates are estimates and may vary by lender.
                     </p>
-                    <Button variant="outline">Export</Button>
+                    <ReportDownloader 
+                      type="loan" 
+                      data={{
+                        loanAmount,
+                        loanTermMonths,
+                        interestRate,
+                        processingFee,
+                        result: loanResult
+                      }}
+                      onSave={(name, includePersonal) => 
+                        saveReport(name, includePersonal, 'loan', {
+                          loanAmount,
+                          loanTermMonths,
+                          interestRate,
+                          processingFee,
+                          result: loanResult
+                        })
+                      }
+                    />
                   </CardFooter>
                 </Card>
               </TabsContent>
@@ -452,7 +529,26 @@ const FinancialTools = () => {
                     <p className="text-sm text-muted-foreground">
                       Results are estimates and don't account for taxes or inflation.
                     </p>
-                    <Button variant="outline">Export</Button>
+                    <ReportDownloader 
+                      type="savings" 
+                      data={{
+                        initialDeposit,
+                        monthlyContribution,
+                        savingsYears,
+                        savingsRate,
+                        result: savingsResult,
+                        projectionData: savingsProjectionData
+                      }}
+                      onSave={(name, includePersonal) => 
+                        saveReport(name, includePersonal, 'savings', {
+                          initialDeposit,
+                          monthlyContribution,
+                          savingsYears,
+                          savingsRate,
+                          result: savingsResult
+                        })
+                      }
+                    />
                   </CardFooter>
                 </Card>
               </TabsContent>
@@ -620,7 +716,24 @@ const FinancialTools = () => {
                     <p className="text-sm text-muted-foreground">
                       Based on the 50/30/20 rule: 50% for needs, 30% for wants, 20% for savings.
                     </p>
-                    <Button variant="outline">Export</Button>
+                    <ReportDownloader 
+                      type="budget" 
+                      data={{
+                        monthlyIncome,
+                        essentialExpenses,
+                        savingsTarget,
+                        result: budgetResult,
+                        chartData: budgetData
+                      }}
+                      onSave={(name, includePersonal) => 
+                        saveReport(name, includePersonal, 'budget', {
+                          monthlyIncome,
+                          essentialExpenses,
+                          savingsTarget,
+                          result: budgetResult
+                        })
+                      }
+                    />
                   </CardFooter>
                 </Card>
               </TabsContent>
@@ -637,16 +750,142 @@ const FinancialTools = () => {
                       Convert between Kenyan Shillings and major world currencies.
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-col items-center justify-center p-12">
-                      <LineChart className="h-12 w-12 text-gray-400 mb-4" />
-                      <h3 className="text-lg font-medium text-center">Coming Soon</h3>
-                      <p className="text-gray-500 text-center mt-2">
-                        We're working on adding real-time currency conversion rates.
-                        Check back soon!
-                      </p>
+                  <CardContent className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="amount">Amount</Label>
+                          <Input
+                            id="amount"
+                            type="number"
+                            value={amount}
+                            onChange={(e) => setAmount(Number(e.target.value))}
+                            className="w-full"
+                          />
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="fromCurrency">From</Label>
+                            <Select
+                              value={fromCurrency}
+                              onValueChange={(value) => setFromCurrency(value as CurrencyCode)}
+                            >
+                              <SelectTrigger id="fromCurrency">
+                                <SelectValue placeholder="Select currency" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {currencies.map((currency) => (
+                                  <SelectItem key={currency} value={currency}>
+                                    {currency}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="toCurrency">To</Label>
+                            <Select
+                              value={toCurrency}
+                              onValueChange={(value) => setToCurrency(value as CurrencyCode)}
+                            >
+                              <SelectTrigger id="toCurrency">
+                                <SelectValue placeholder="Select currency" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {currencies.map((currency) => (
+                                  <SelectItem key={currency} value={currency}>
+                                    {currency}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        
+                        <div className="pt-6 flex items-center gap-4">
+                          <div className="bg-gray-50 p-4 rounded-lg flex-1">
+                            <p className="text-sm text-gray-600 font-medium">
+                              {amount} {fromCurrency}
+                            </p>
+                          </div>
+                          
+                          <ArrowRight className="h-5 w-5 text-gray-400" />
+                          
+                          <div className="bg-green-50 p-4 rounded-lg flex-1">
+                            <p className="text-sm text-green-600 font-medium">
+                              {convertedAmount.toFixed(4)} {toCurrency}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="bg-white p-4 rounded-lg">
+                          <p className="text-sm font-medium mb-2">Exchange Rate</p>
+                          <p className="text-2xl font-bold">
+                            1 {fromCurrency} = {(convertedAmount / amount).toFixed(6)} {toCurrency}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="h-72 bg-white rounded-lg p-4">
+                        <p className="text-sm font-medium mb-2">Historical Exchange Rate</p>
+                        <ResponsiveContainer width="100%" height="90%">
+                          <RechartsLineChart data={historicalData}>
+                            <XAxis 
+                              dataKey="date" 
+                              tick={{ fontSize: 12 }} 
+                              tickFormatter={(value) => value.slice(5)} // Show only month-day
+                            />
+                            <YAxis 
+                              tick={{ fontSize: 12 }}
+                              domain={['auto', 'auto']}
+                              tickFormatter={(value) => value.toFixed(4)}
+                            />
+                            <RechartsTooltip 
+                              formatter={(value: any) => [
+                                `${Number(value).toFixed(6)} ${toCurrency}`,
+                                `Exchange Rate`
+                              ]}
+                              labelFormatter={(label) => `Date: ${label}`}
+                            />
+                            <Line 
+                              type="monotone" 
+                              dataKey="value" 
+                              stroke="#22c55e" 
+                              dot={false}
+                              activeDot={{ r: 6 }}
+                            />
+                          </RechartsLineChart>
+                        </ResponsiveContainer>
+                      </div>
                     </div>
                   </CardContent>
+                  <CardFooter className="flex justify-between border-t pt-6">
+                    <p className="text-sm text-muted-foreground">
+                      Rates are for demonstration purposes and may not reflect current market rates.
+                    </p>
+                    <ReportDownloader 
+                      type="currency" 
+                      data={{
+                        amount,
+                        fromCurrency,
+                        toCurrency,
+                        convertedAmount,
+                        exchangeRate: convertedAmount / amount,
+                        historicalData
+                      }}
+                      onSave={(name, includePersonal) => 
+                        saveReport(name, includePersonal, 'currency', {
+                          amount,
+                          fromCurrency,
+                          toCurrency,
+                          convertedAmount,
+                          exchangeRate: convertedAmount / amount
+                        })
+                      }
+                    />
+                  </CardFooter>
                 </Card>
               </TabsContent>
             </Tabs>
