@@ -122,6 +122,45 @@ export type Database = {
           },
         ]
       }
+      mpesa_transactions: {
+        Row: {
+          amount: number
+          balance: number | null
+          created_at: string
+          id: string
+          raw_message: string | null
+          sender_receiver: string | null
+          timestamp: string
+          transaction_id: string
+          transaction_type: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          balance?: number | null
+          created_at?: string
+          id?: string
+          raw_message?: string | null
+          sender_receiver?: string | null
+          timestamp?: string
+          transaction_id: string
+          transaction_type?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          balance?: number | null
+          created_at?: string
+          id?: string
+          raw_message?: string | null
+          sender_receiver?: string | null
+          timestamp?: string
+          transaction_id?: string
+          transaction_type?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       referral_rewards: {
         Row: {
           amount: number
@@ -203,6 +242,36 @@ export type Database = {
           referred_user_id?: string
           referrer_id?: string
           reward_paid?: boolean
+        }
+        Relationships: []
+      }
+      saved_reports: {
+        Row: {
+          created_at: string
+          id: string
+          include_personal_info: boolean | null
+          name: string
+          settings: Json | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          include_personal_info?: boolean | null
+          name: string
+          settings?: Json | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          include_personal_info?: boolean | null
+          name?: string
+          settings?: Json | null
+          type?: string
+          user_id?: string
         }
         Relationships: []
       }

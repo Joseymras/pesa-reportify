@@ -54,9 +54,25 @@ export default function MpesaBulkImporter() {
           const parsedTransactions = parseTransactions(message);
           if (parsedTransactions.length > 0) {
             const transaction = parsedTransactions[0];
-            // Just log the parsed transaction for now since we don't have the mpesa_transactions table
-            console.log("Parsed transaction:", transaction);
-            successful++;
+            
+            // Insert the transaction into the mpesa_transactions table
+            const { error } = await supabase.from('mpesa_transactions').insert({
+              user_id: userData.user.id,
+              transaction_id: transaction.transactionId || `TX${Date.now()}${Math.floor(Math.random() * 1000)}`,
+              transaction_type: transaction.type,
+              amount: transaction.amount,
+              sender_receiver: transaction.senderReceiver,
+              timestamp: transaction.date ? new Date(transaction.date).toISOString() : new Date().toISOString(),
+              balance: transaction.balance,
+              raw_message: message
+            });
+            
+            if (error) {
+              console.error("Error storing transaction:", error);
+              failed++;
+            } else {
+              successful++;
+            }
           } else {
             failed++;
           }

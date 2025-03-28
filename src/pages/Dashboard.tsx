@@ -1,506 +1,206 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { BarChart3, Download, FileText, List, LogOut, Plus, Share2, User } from "lucide-react";
-import MpesaLogo from "@/components/MpesaLogo";
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import MainNav from "@/components/MainNav";
+import Footer from "@/components/Footer";
 import WhatsAppLinking from "@/components/WhatsAppLinking";
-import { toast } from "sonner";
-import { useAuth } from "@/context/AuthContext";
+import MpesaBulkImporter from "@/components/MpesaBulkImporter";
+import TemplateSelector from "@/components/TemplateSelector";
 import DashboardInsights from "@/components/DashboardInsights";
+import ReferralDashboard from "@/components/ReferralDashboard";
+import ReportDownloader from "@/components/ReportDownloader";
 import SavedReports from "@/components/SavedReports";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import CopyToClipboard from "@/components/CopyToClipboard";
 import { useNavigate, Link } from "react-router-dom";
 import { calculateTotal, formatCurrency } from "@/utils/calculationUtils";
 
-type Transaction = {
-  id: string;
-  amount: number;
-  name: string;
-  phone: string;
-  date: string;
-  time: string;
-};
-
 const Dashboard = () => {
-  const [messages, setMessages] = useState("");
-  const [selectedTemplate, setSelectedTemplate] = useState("chama");
-  const [reportTitle, setReportTitle] = useState("Chama Contribution Report");
-  const [parsedTransactions, setParsedTransactions] = useState<Transaction[]>([]);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [reportGenerated, setReportGenerated] = useState(false);
-  const [whatsAppIntegrated, setWhatsAppIntegrated] = useState(false);
-  const [activeTab, setActiveTab] = useState("new");
-  const { user, signOut } = useAuth();
+  const [isWhatsAppLinked, setIsWhatsAppLinked] = useState(false);
+  const [totalIncome, setTotalIncome] = useState(0);
+  const [totalExpenses, setTotalExpenses] = useState(0);
+  const [netBalance, setNetBalance] = useState(0);
+  const [mpesaData, setMpesaData] = useState([
+    { name: 'Sent', value: 0 },
+    { name: 'Received', value: 0 },
+  ]);
+  const [transactionHistory, setTransactionHistory] = useState([
+    { name: 'Jan', income: 0, expense: 0 },
+    { name: 'Feb', income: 0, expense: 0 },
+    { name: 'Mar', income: 0, expense: 0 },
+    { name: 'Apr', income: 0, expense: 0 },
+    { name: 'May', income: 0, expense: 0 },
+    { name: 'Jun', income: 0, expense: 0 },
+  ]);
+  const [showChat, setShowChat] = useState(false);
   const navigate = useNavigate();
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   useEffect(() => {
-    if (!user) {
-      navigate("/login", { replace: true });
-    }
-  }, [user, navigate]);
+    // Mock data for demonstration
+    setIsWhatsAppLinked(true);
+    setTotalIncome(50000);
+    setTotalExpenses(20000);
+    setNetBalance(30000);
+    setMpesaData([
+      { name: 'Sent', value: 20000 },
+      { name: 'Received', value: 30000 },
+    ]);
+    setTransactionHistory([
+      { name: 'Jan', income: 5000, expense: 2000 },
+      { name: 'Feb', income: 6000, expense: 3000 },
+      { name: 'Mar', income: 7000, expense: 1000 },
+      { name: 'Apr', income: 8000, expense: 4000 },
+      { name: 'May', income: 9000, expense: 2000 },
+      { name: 'Jun', income: 10000, expense: 5000 },
+    ]);
+  }, []);
 
-  const parseTransactions = (text: string): Transaction[] => {
-    const results: Transaction[] = [];
-    const lines = text.split("\n").filter(line => line.trim().length > 0);
-    
-    lines.forEach(line => {
-      const pattern = /(\w+)\s+Confirmed\.\s+Ksh([\d,]+\.\d+)\s+received\s+from\s+([A-Z\s]+)\s+(\d+)\s+on\s+(\d+\/\d+\/\d+)\s+at\s+(\d+:\d+\s+[APM]+)/i;
-      const match = line.match(pattern);
-      
-      if (match) {
-        results.push({
-          id: match[1],
-          amount: parseFloat(match[2].replace(/,/g, '')),
-          name: match[3].trim(),
-          phone: match[4],
-          date: match[5],
-          time: match[6]
-        });
-      }
-    });
-    
-    return results;
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+
+  const RADIAN = Math.PI / 180;
+  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }: any) => {
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+      <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
+        {`${(percent * 100).toFixed(0)}%`}
+      </text>
+    );
   };
-
-  const handleProcessMessages = () => {
-    setIsProcessing(true);
-    setTimeout(() => {
-      const transactions = parseTransactions(messages);
-      setParsedTransactions(transactions);
-      setIsProcessing(false);
-      setReportGenerated(transactions.length > 0);
-      
-      if (transactions.length === 0) {
-        toast.error("No valid M-PESA messages found. Please check your input.");
-      } else {
-        toast.success(`Successfully parsed ${transactions.length} transaction${transactions.length === 1 ? '' : 's'}`);
-      }
-    }, 1500);
-  };
-
-  const generateReportText = () => {
-    const totalContributed = calculateTotal(parsedTransactions.map(t => t.amount));
-    
-    let reportText = `${reportTitle}\n\n`;
-    reportText += `Date: ${new Date().toLocaleDateString()}\n`;
-    reportText += `Total Contributed: Ksh ${formatCurrency(totalContributed)}\n\n`;
-    reportText += "Contributors:\n";
-    
-    parsedTransactions.forEach((transaction, index) => {
-      reportText += `${index + 1}. ${transaction.name}: Ksh ${formatCurrency(transaction.amount)}\n`;
-    });
-    
-    reportText += `\nGenerated by PesaLytics - https://pesalytics.com`;
-    
-    return reportText;
-  };
-
-  const handleShareToWhatsApp = () => {
-    if (!whatsAppIntegrated) {
-      toast.error("Please connect your WhatsApp first in the WhatsApp Integration tab");
-      return;
-    }
-    
-    const reportText = encodeURIComponent(generateReportText());
-    window.open(`https://wa.me/?text=${reportText}`, '_blank');
-  };
-
-  const handleDownloadReport = () => {
-    const reportText = generateReportText();
-    const blob = new Blob([reportText], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    
-    a.href = url;
-    a.download = `${reportTitle.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    toast.success("Report downloaded successfully");
-  };
-
-  const handleWhatsAppIntegration = (integrated: boolean) => {
-    setWhatsAppIntegrated(integrated);
-    if (integrated) {
-      toast.success("WhatsApp groups integrated successfully");
-    }
-  };
-
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
-    setIsSheetOpen(false);
-  };
-
-  const totalContributed = calculateTotal(parsedTransactions.map(t => t.amount));
-
-  if (!user) {
-    return null;
-  }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="grid md:grid-cols-[250px_1fr]">
-        <aside className="hidden border-r bg-white md:block">
-          <div className="flex h-16 items-center gap-2 border-b px-6">
-            <MpesaLogo className="h-8 w-8" />
-            <h1 className="text-xl font-bold">
-              Pesa<span className="text-green-600">Lytics</span>
-            </h1>
-          </div>
-          <nav className="flex flex-col gap-2 p-4">
-            <Button variant="ghost" className="justify-start gap-2" onClick={() => setActiveTab("new")}>
-              <FileText className="h-5 w-5" />
-              New Report
-            </Button>
-            <Button variant="ghost" className="justify-start gap-2" onClick={() => setActiveTab("saved")}>
-              <FileText className="h-5 w-5" />
-              Saved Reports
-            </Button>
-            <Button variant="ghost" className="justify-start gap-2" onClick={() => setActiveTab("whatsapp")}>
-              <FileText className="h-5 w-5" />
-              WhatsApp Integration
-            </Button>
-            <Button variant="ghost" className="justify-start gap-2">
-              <BarChart3 className="h-5 w-5" />
-              Analytics
-            </Button>
-            <Button variant="ghost" className="justify-start gap-2">
-              <User className="h-5 w-5" />
-              Account
-            </Button>
-            <Button 
-              variant="ghost" 
-              className="justify-start gap-2 text-red-500 hover:text-red-600"
-              onClick={() => signOut()}
-            >
-              <LogOut className="h-5 w-5" />
-              Logout
-            </Button>
-          </nav>
-        </aside>
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-green-50 to-white">
+      <MainNav />
 
-        <main className="flex-1">
-          <header className="flex h-16 items-center justify-between border-b bg-white px-4 md:px-6">
-            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden">
-                  <List className="h-6 w-6" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-[240px] sm:w-[300px]">
-                <div className="flex h-16 items-center gap-2 border-b px-6">
-                  <MpesaLogo className="h-8 w-8" />
-                  <h1 className="text-xl font-bold">
-                    Pesa<span className="text-green-600">Lytics</span>
-                  </h1>
-                </div>
-                <nav className="flex flex-col gap-2 p-4">
-                  <Button 
-                    variant="ghost" 
-                    className="justify-start gap-2" 
-                    onClick={() => { 
-                      setActiveTab("new"); 
-                      setIsSheetOpen(false);
-                    }}
+      <main className="container mx-auto px-4 py-8 flex-grow pt-24">
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <Button onClick={() => navigate("/templates")} className="bg-green-600 hover:bg-green-700">
+            Get Started with Templates
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card className="bg-white shadow-sm">
+            <CardHeader>
+              <CardTitle>Total Income</CardTitle>
+              <CardDescription>All income from M-Pesa</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">Ksh {formatCurrency(totalIncome)}</div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white shadow-sm">
+            <CardHeader>
+              <CardTitle>Total Expenses</CardTitle>
+              <CardDescription>All expenses from M-Pesa</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-600">Ksh {formatCurrency(totalExpenses)}</div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white shadow-sm">
+            <CardHeader>
+              <CardTitle>Net Balance</CardTitle>
+              <CardDescription>Income less expenses</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-800">Ksh {formatCurrency(netBalance)}</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card className="bg-white shadow-sm">
+            <CardHeader>
+              <CardTitle>Income vs Expenses</CardTitle>
+              <CardDescription>A breakdown of income and expenses</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={transactionHistory}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="income" fill="#00C49F" />
+                  <Bar dataKey="expense" fill="#FF8042" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white shadow-sm">
+            <CardHeader>
+              <CardTitle>M-Pesa Transactions</CardTitle>
+              <CardDescription>Distribution of sent vs received</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={mpesaData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={renderCustomizedLabel}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
                   >
-                    <FileText className="h-5 w-5" />
-                    New Report
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    className="justify-start gap-2" 
-                    onClick={() => { 
-                      setActiveTab("saved"); 
-                      setIsSheetOpen(false);
-                    }}
-                  >
-                    <FileText className="h-5 w-5" />
-                    Saved Reports
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    className="justify-start gap-2" 
-                    onClick={() => { 
-                      setActiveTab("whatsapp"); 
-                      setIsSheetOpen(false);
-                    }}
-                  >
-                    <FileText className="h-5 w-5" />
-                    WhatsApp Integration
-                  </Button>
-                  <Button variant="ghost" className="justify-start gap-2">
-                    <BarChart3 className="h-5 w-5" />
-                    Analytics
-                  </Button>
-                  <Button variant="ghost" className="justify-start gap-2">
-                    <User className="h-5 w-5" />
-                    Account
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    className="justify-start gap-2 text-red-500 hover:text-red-600"
-                    onClick={() => signOut()}
-                  >
-                    <LogOut className="h-5 w-5" />
-                    Logout
-                  </Button>
-                </nav>
-              </SheetContent>
-            </Sheet>
-            <h2 className="text-lg font-semibold md:hidden">PesaLytics</h2>
-            <div className="flex items-center gap-4">
-              <span className="text-sm font-medium">Welcome, {user?.email || "User"}</span>
-            </div>
-          </header>
+                    {mpesaData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Legend />
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
 
-          <div className="container mx-auto p-4 md:p-6">
-            <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center">
-              <h1 className="text-2xl font-bold">Dashboard</h1>
-              <Button className="bg-green-600 hover:bg-green-700 gap-2" onClick={() => setActiveTab("new")}>
-                <Plus className="h-4 w-4" />
-                New Report
-              </Button>
-            </div>
+        <div className="mt-8">
+          <Tabs defaultvalue="insights" className="w-full">
+            <TabsList>
+              <TabsTrigger value="insights">Insights</TabsTrigger>
+              <TabsTrigger value="bulk-import">Bulk Import</TabsTrigger>
+              <TabsTrigger value="whatsapp">WhatsApp</TabsTrigger>
+              <TabsTrigger value="referrals">Referrals</TabsTrigger>
+              <TabsTrigger value="reports">Reports</TabsTrigger>
+              <TabsTrigger value="templates">Templates</TabsTrigger>
+            </TabsList>
+            <TabsContent value="insights" className="mt-4">
+              <DashboardInsights />
+            </TabsContent>
+            <TabsContent value="bulk-import" className="mt-4">
+              <MpesaBulkImporter />
+            </TabsContent>
+            <TabsContent value="whatsapp" className="mt-4">
+              <WhatsAppLinking />
+            </TabsContent>
+            <TabsContent value="referrals" className="mt-4">
+              <ReferralDashboard />
+            </TabsContent>
+            <TabsContent value="reports" className="mt-4">
+              <ReportDownloader />
+              <SavedReports />
+            </TabsContent>
+            <TabsContent value="templates" className="mt-4">
+              <TemplateSelector />
+            </TabsContent>
+          </Tabs>
+        </div>
+      </main>
 
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-              <div className="lg:col-span-2">
-                <Tabs defaultValue="new" value={activeTab} onValueChange={handleTabChange}>
-                  <TabsList className="mb-4">
-                    <TabsTrigger value="new">New Report</TabsTrigger>
-                    <TabsTrigger value="saved">Saved Reports</TabsTrigger>
-                    <TabsTrigger value="whatsapp">WhatsApp Integration</TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="new">
-                    <div className="grid gap-6 md:grid-cols-2">
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>1. Paste M-PESA Messages</CardTitle>
-                          <CardDescription>
-                            Copy and paste your M-PESA transaction messages. Each message should be on a separate line.
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          <Textarea 
-                            placeholder="Paste your M-PESA messages here..."
-                            className="min-h-[250px]"
-                            value={messages}
-                            onChange={(e) => setMessages(e.target.value)}
-                          />
-                        </CardContent>
-                      </Card>
-
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>2. Choose Report Template</CardTitle>
-                          <CardDescription>
-                            Select a template for your report and customize the title.
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="template">Template Type</Label>
-                            <Select 
-                              value={selectedTemplate} 
-                              onValueChange={setSelectedTemplate}
-                            >
-                              <SelectTrigger id="template">
-                                <SelectValue placeholder="Select template" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="chama">Chama Contribution</SelectItem>
-                                <SelectItem value="wedding">Wedding Fundraiser</SelectItem>
-                                <SelectItem value="medical">Medical Fund</SelectItem>
-                                <SelectItem value="daily">Daily Challenge</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <Label htmlFor="title">Report Title</Label>
-                            <input
-                              id="title"
-                              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                              value={reportTitle}
-                              onChange={(e) => setReportTitle(e.target.value)}
-                            />
-                          </div>
-                          
-                          <Button 
-                            className="w-full bg-green-600 hover:bg-green-700 mt-4"
-                            disabled={!messages.trim() || isProcessing}
-                            onClick={handleProcessMessages}
-                          >
-                            {isProcessing ? "Processing..." : "Generate Report"}
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    </div>
-
-                    {reportGenerated && (
-                      <Card className="mt-6">
-                        <CardHeader>
-                          <CardTitle>3. Generated Report</CardTitle>
-                          <CardDescription>
-                            Your report is ready. You can download it, share to WhatsApp, or copy the content.
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="mb-6 rounded-lg bg-white p-6 shadow-sm">
-                            <h3 className="mb-4 text-center text-xl font-bold text-green-700">
-                              {reportTitle}
-                            </h3>
-                            
-                            <div className="mb-4 text-center">
-                              <p className="text-sm text-gray-500">Date: {new Date().toLocaleDateString()}</p>
-                              <h4 className="mt-2 text-lg font-semibold">
-                                Total Contributed: Ksh {formatCurrency(totalContributed)}
-                              </h4>
-                            </div>
-                            
-                            <div className="space-y-3">
-                              <div className="grid grid-cols-[1fr_auto] gap-2 font-medium text-green-800">
-                                <span>Contributor</span>
-                                <span>Amount</span>
-                              </div>
-                              
-                              {parsedTransactions.map((transaction, index) => (
-                                <div key={index} className="grid grid-cols-[1fr_auto] gap-2 py-2 border-b border-gray-100">
-                                  <span>{transaction.name}</span>
-                                  <span className="font-medium">
-                                    Ksh {formatCurrency(transaction.amount)}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                            
-                            <div className="mt-6 text-center text-sm text-gray-500">
-                              <p>
-                                <Link to="/" className="text-green-600 hover:text-green-700">
-                                  Generated by PesaLytics
-                                </Link> - Hesabu Ya Haraka
-                              </p>
-                            </div>
-                          </div>
-                          
-                          <div className="flex flex-wrap justify-center gap-4">
-                            <Button className="gap-2" onClick={handleDownloadReport}>
-                              <Download className="h-4 w-4" />
-                              Download Report
-                            </Button>
-                            <Button variant="outline" className="gap-2" onClick={handleShareToWhatsApp}>
-                              <Share2 className="h-4 w-4" />
-                              Share to WhatsApp
-                            </Button>
-                            <CopyToClipboard 
-                              text={generateReportText()} 
-                              variant="outline" 
-                              label="Copy Report"
-                              successMessage="Report copied to clipboard"
-                            />
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )}
-                  </TabsContent>
-                  
-                  <TabsContent value="saved">
-                    <SavedReports />
-                  </TabsContent>
-
-                  <TabsContent value="whatsapp">
-                    <div className="grid gap-6 md:grid-cols-2">
-                      <WhatsAppLinking onIntegrationChange={handleWhatsAppIntegration} />
-                      
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>WhatsApp Auto-Update Settings</CardTitle>
-                          <CardDescription>
-                            Configure how your reports are automatically updated to your WhatsApp groups
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div className="rounded-lg border bg-slate-50 p-4">
-                            <div className="flex items-center gap-2 mb-4">
-                              <div className={`w-3 h-3 rounded-full ${whatsAppIntegrated ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                              <span className="text-sm font-medium">Status: {whatsAppIntegrated ? 'Connected' : 'Not Connected'}</span>
-                            </div>
-                            
-                            <div className="space-y-3">
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm">Auto-send new reports</span>
-                                <div>
-                                  <Label htmlFor="auto-send" className="sr-only">Auto-send</Label>
-                                  <Select disabled={!whatsAppIntegrated} defaultValue="ask">
-                                    <SelectTrigger id="auto-send" className="w-[130px]">
-                                      <SelectValue placeholder="Choose" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="always">Always</SelectItem>
-                                      <SelectItem value="ask">Ask First</SelectItem>
-                                      <SelectItem value="never">Never</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                              </div>
-                              
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm">Update frequency</span>
-                                <div>
-                                  <Label htmlFor="frequency" className="sr-only">Frequency</Label>
-                                  <Select disabled={!whatsAppIntegrated} defaultValue="manual">
-                                    <SelectTrigger id="frequency" className="w-[130px]">
-                                      <SelectValue placeholder="Choose" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="realtime">Real-time</SelectItem>
-                                      <SelectItem value="hourly">Hourly</SelectItem>
-                                      <SelectItem value="daily">Daily</SelectItem>
-                                      <SelectItem value="manual">Manual</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                              </div>
-                            </div>
-                            
-                            <div className="mt-4 pt-4 border-t">
-                              <Button 
-                                className="w-full"
-                                disabled={!whatsAppIntegrated}
-                                variant={whatsAppIntegrated ? "default" : "outline"}
-                              >
-                                Save Settings
-                              </Button>
-                            </div>
-                          </div>
-                          
-                          <div className="text-sm text-muted-foreground">
-                            <p>Connect to WhatsApp groups to automatically send and update reports.</p>
-                            <p className="mt-2">Changes to contributions will be automatically reflected in your groups based on your update frequency settings.</p>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </TabsContent>
-                </Tabs>
-              </div>
-              
-              <div className="lg:col-span-1">
-                <DashboardInsights />
-              </div>
-            </div>
-          </div>
-        </main>
-      </div>
+      <Footer />
     </div>
   );
 };
