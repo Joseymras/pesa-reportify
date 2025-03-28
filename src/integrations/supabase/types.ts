@@ -9,13 +9,218 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      admin_users: {
+        Row: {
+          created_at: string
+          id: string
+          role: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          role?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: string
+        }
+        Relationships: []
+      }
+      blog_posts: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string
+          excerpt: string | null
+          featured_image: string | null
+          id: string
+          published_at: string | null
+          seo_description: string | null
+          seo_keywords: string[] | null
+          seo_title: string | null
+          slug: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string
+          excerpt?: string | null
+          featured_image?: string | null
+          id?: string
+          published_at?: string | null
+          seo_description?: string | null
+          seo_keywords?: string[] | null
+          seo_title?: string | null
+          slug: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string
+          excerpt?: string | null
+          featured_image?: string | null
+          id?: string
+          published_at?: string | null
+          seo_description?: string | null
+          seo_keywords?: string[] | null
+          seo_title?: string | null
+          slug?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      financial_news: {
+        Row: {
+          auto_blog_post: boolean
+          blog_post_id: string | null
+          category: string | null
+          content: string
+          display_on_marquee: boolean
+          id: string
+          publish_date: string
+          source: string | null
+          title: string
+        }
+        Insert: {
+          auto_blog_post?: boolean
+          blog_post_id?: string | null
+          category?: string | null
+          content: string
+          display_on_marquee?: boolean
+          id?: string
+          publish_date?: string
+          source?: string | null
+          title: string
+        }
+        Update: {
+          auto_blog_post?: boolean
+          blog_post_id?: string | null
+          category?: string | null
+          content?: string
+          display_on_marquee?: boolean
+          id?: string
+          publish_date?: string
+          source?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_news_blog_post_id_fkey"
+            columns: ["blog_post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referral_rewards: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          paid_at: string | null
+          reason: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          reason: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          reason?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          clicks: number
+          created_at: string
+          id: string
+          referral_code: string
+          signups: number
+          user_id: string
+        }
+        Insert: {
+          clicks?: number
+          created_at?: string
+          id?: string
+          referral_code: string
+          signups?: number
+          user_id: string
+        }
+        Update: {
+          clicks?: number
+          created_at?: string
+          id?: string
+          referral_code?: string
+          signups?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      referred_users: {
+        Row: {
+          converted_to_paid: boolean
+          created_at: string
+          id: string
+          referred_user_id: string
+          referrer_id: string
+          reward_paid: boolean
+        }
+        Insert: {
+          converted_to_paid?: boolean
+          created_at?: string
+          id?: string
+          referred_user_id: string
+          referrer_id: string
+          reward_paid?: boolean
+        }
+        Update: {
+          converted_to_paid?: boolean
+          created_at?: string
+          id?: string
+          referred_user_id?: string
+          referrer_id?: string
+          reward_paid?: boolean
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_referral_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      is_admin: {
+        Args: {
+          uid: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
