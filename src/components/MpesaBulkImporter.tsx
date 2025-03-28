@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -57,7 +58,7 @@ export default function MpesaBulkImporter() {
               transaction_id: transaction.id || `TX${Date.now()}${Math.floor(Math.random() * 1000)}`,
               transaction_type: transaction.type,
               amount: transaction.amount,
-              sender_receiver: transaction.senderReceiver || transaction.party || '',
+              sender_receiver: transaction.name, // Changed from senderReceiver to name
               timestamp: transaction.date ? new Date(transaction.date).toISOString() : new Date().toISOString(),
               balance: transaction.balance,
               raw_message: message
