@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +15,7 @@ import DashboardInsights from "@/components/DashboardInsights";
 import SavedReports from "@/components/SavedReports";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import CopyToClipboard from "@/components/CopyToClipboard";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { calculateTotal, formatCurrency } from "@/utils/calculationUtils";
 
 type Transaction = {
