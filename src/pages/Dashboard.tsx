@@ -18,6 +18,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { calculateTotal, formatCurrency } from "@/utils/calculationUtils";
 import { AdminChat } from "@/components/AdminChat";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/context/AuthContext";
 
 const Dashboard = () => {
   const [isWhatsAppLinked, setIsWhatsAppLinked] = useState(false);
@@ -39,7 +40,7 @@ const Dashboard = () => {
   const [showChat, setShowChat] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
-  const user = supabase.auth.user();
+  const { user } = useAuth();
 
   useEffect(() => {
     setIsWhatsAppLinked(true);
