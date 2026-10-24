@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -26,6 +26,30 @@ export type Database = {
         Update: {
           created_at?: string | null
           id?: string
+        }
+        Relationships: []
+      }
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          detail: Json
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          detail?: Json
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          detail?: Json
+          id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -107,6 +131,44 @@ export type Database = {
         }
         Relationships: []
       }
+      contributors: {
+        Row: {
+          created_at: string
+          group_id: string
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          target_amount: number | null
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          target_amount?: number | null
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          target_amount?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contributors_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       financial_news: {
         Row: {
           auto_blog_post: boolean | null
@@ -140,6 +202,45 @@ export type Database = {
           publish_date?: string | null
           source?: string | null
           title?: string
+        }
+        Relationships: []
+      }
+      groups: {
+        Row: {
+          created_at: string
+          deadline: string | null
+          description: string | null
+          id: string
+          name: string
+          status: string
+          target_amount: number | null
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          status?: string
+          target_amount?: number | null
+          type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          status?: string
+          target_amount?: number | null
+          type?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -212,6 +313,89 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          amount_kes: number
+          created_at: string
+          currency: string
+          id: string
+          metadata: Json
+          plan_id: string | null
+          provider: string
+          reference: string
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount_kes: number
+          created_at?: string
+          currency?: string
+          id?: string
+          metadata?: Json
+          plan_id?: string | null
+          provider?: string
+          reference: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount_kes?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          metadata?: Json
+          plan_id?: string | null
+          provider?: string
+          reference?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plan_limits"
+            referencedColumns: ["plan_id"]
+          },
+        ]
+      }
+      plan_limits: {
+        Row: {
+          created_at: string
+          max_groups: number | null
+          max_transactions_monthly: number | null
+          name: string
+          plan_id: string
+          premium_templates: boolean
+          price_kes: number
+          public_reports: boolean
+        }
+        Insert: {
+          created_at?: string
+          max_groups?: number | null
+          max_transactions_monthly?: number | null
+          name: string
+          plan_id: string
+          premium_templates?: boolean
+          price_kes?: number
+          public_reports?: boolean
+        }
+        Update: {
+          created_at?: string
+          max_groups?: number | null
+          max_transactions_monthly?: number | null
+          name?: string
+          plan_id?: string
+          premium_templates?: boolean
+          price_kes?: number
+          public_reports?: boolean
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -241,6 +425,41 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      raw_messages: {
+        Row: {
+          content: string
+          created_at: string
+          group_id: string | null
+          id: string
+          parsed: boolean
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          group_id?: string | null
+          id?: string
+          parsed?: boolean
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          group_id?: string | null
+          id?: string
+          parsed?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "raw_messages_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       referral_rewards: {
         Row: {
@@ -326,6 +545,50 @@ export type Database = {
         }
         Relationships: []
       }
+      reports: {
+        Row: {
+          created_at: string
+          group_id: string | null
+          id: string
+          is_public: boolean
+          public_slug: string | null
+          snapshot: Json
+          template: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          group_id?: string | null
+          id?: string
+          is_public?: boolean
+          public_slug?: string | null
+          snapshot: Json
+          template?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          group_id?: string | null
+          id?: string
+          is_public?: boolean
+          public_slug?: string | null
+          snapshot?: Json
+          template?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       saved_reports: {
         Row: {
           created_at: string | null
@@ -356,13 +619,150 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          created_at: string
+          current_period_end: string | null
+          id: string
+          paystack_customer_code: string | null
+          paystack_subscription_code: string | null
+          plan_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          paystack_customer_code?: string | null
+          paystack_subscription_code?: string | null
+          plan_id?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          paystack_customer_code?: string | null
+          paystack_subscription_code?: string | null
+          plan_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plan_limits"
+            referencedColumns: ["plan_id"]
+          },
+        ]
+      }
+      transactions: {
+        Row: {
+          amount: number
+          balance: number | null
+          confidence: number
+          contributor_id: string | null
+          counterparty_name: string | null
+          counterparty_phone: string | null
+          created_at: string
+          group_id: string | null
+          id: string
+          mpesa_code: string
+          needs_review: boolean
+          occurred_at: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          balance?: number | null
+          confidence?: number
+          contributor_id?: string | null
+          counterparty_name?: string | null
+          counterparty_phone?: string | null
+          created_at?: string
+          group_id?: string | null
+          id?: string
+          mpesa_code: string
+          needs_review?: boolean
+          occurred_at?: string | null
+          type?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          balance?: number | null
+          confidence?: number
+          contributor_id?: string | null
+          counterparty_name?: string | null
+          counterparty_phone?: string | null
+          created_at?: string
+          group_id?: string | null
+          id?: string
+          mpesa_code?: string
+          needs_review?: boolean
+          occurred_at?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_contributor_id_fkey"
+            columns: ["contributor_id"]
+            isOneToOne: false
+            referencedRelation: "contributors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      usage_events: {
+        Row: {
+          created_at: string
+          event: string
+          id: string
+          metadata: Json
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event: string
+          id?: string
+          metadata?: Json
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event?: string
+          id?: string
+          metadata?: Json
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
       generate_referral_code: { Args: never; Returns: string }
+      get_public_report: { Args: { slug: string }; Returns: Json }
+      get_user_plan: { Args: { uid: string }; Returns: string }
       is_admin: { Args: { uid: string }; Returns: boolean }
+      owns_group: { Args: { gid: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
@@ -381,12 +781,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -410,11 +810,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -435,11 +835,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -460,11 +860,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -477,11 +877,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
