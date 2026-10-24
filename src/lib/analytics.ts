@@ -25,7 +25,7 @@ export function trackEvent(
   if (!userId) return;
   void supabase
     .from("usage_events")
-    .insert({ user_id: userId, event, metadata })
+    .insert({ user_id: userId, event, metadata: metadata as Record<string, never> })
     .then(({ error }) => {
       if (error) console.debug("analytics:", error.message);
     });
